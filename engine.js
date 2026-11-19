@@ -97,12 +97,46 @@ const input = document.createElement('input');
 input.type = 'file'; input.multiple = true; input.accept = 'audio/*,.mp3,.m4a,.aac,.flac,.ogg,.opus,.wav';
 input.style.display = 'none'; document.documentElement.appendChild(input);
 E.pick = () => { input.value = ''; input.click(); };
-input.addEventListener('change', async () => {
-  const files = [...input.files]; if (!files.length) return;
-  let added = 0, skipped = 0, n = 0;
+/* details kept aside: they come from a backup file, or from songs removed from the app. When the same song is added again
+   (same file name and size, or the same content) its details and cover are attached again. */
+let stash = { r: [], a: {} };
+const stashSave = () => { stash.r = stash.r.slice(-4000); return put('art', JSON.stringify(stash), 'bk:details').catch(() => {}); };
+const recOf = m => ({ f: m.f, size: m.size, h: m.h && !/^x/.test(m.h) ? m.h : '', t: m.t, a: m.a, al: m.al, y: m.y, ys: m.ys, yc: m.yc, yv: m.yv, g: m.g, n: m.n, ly: m.ly, man: m.man, orig: m.orig, ak: m.ak });
+const keep = list => { list.forEach(m => { const r = recOf(m); stash.r = stash.r.filter(x => !(x.f === r.f && x.size === r.size)); stash.r.push(r); if (m.ak && artMap.has(m.ak)) stash.a[m.ak] = artMap.get(m.ak); if (m.orig && m.orig.ak && artMap.has(m.orig.ak)) stash.a[m.orig.ak] = artMap.get(m.orig.ak); }); };
+async function attach(m, r) {
+  ['t', 'a', 'al', 'y', 'ys', 'yc', 'yv', 'g', 'n', 'ly', 'man', 'orig'].forEach(k => { if (r[k] !== undefined) m[k] = r[k]; });
+  if (r.h) m.h = r.h;
+  if (r.ak) {
+    const u = stash.a[r.ak] || artMap.get(r.ak), key = /^m:/.test(r.ak) ? 'm:' + m.id : r.ak;
+    if (u) { artMap.set(key, u); await put('art', u, key); m.ak = key; }
+  }
+  if (m.orig && /^m:/.test(m.orig.ak || '')) m.orig.ak = '';
+  m.p = m.al || m.a || m.p;
+}
+const found = async (f, can) => {
+  if (!stash.r.length) return null;
+  let r = stash.r.find(x => x.f === f.name && x.size === f.size);
+  if (!r && can) { try { const h = hex(await crypto.subtle.digest('SHA-256', await f.arrayBuffer())) + ':' + f.size; r = stash.r.find(x => x.h === h); } catch (x) {} }
+  return r || null;
+};
+E.dumpDetails = () => { const own = new Set(metas.map(m => m.f + '|' + m.size)); const old = stash.r.filter(x => !own.has(x.f + '|' + x.size)); const keepS = { r: stash.r, a: stash.a }; stash = { r: old, a: stash.a }; keep(metas.concat(trash)); const out = { r: stash.r, a: stash.a }; stash = keepS; return out; };
+E.loadDetails = async d => {
+  if (!d || !Array.isArray(d.r)) return 0;
+  const keys = new Set(d.r.map(x => x.f + '|' + x.size)); stash.r = stash.r.filter(x => !keys.has(x.f + '|' + x.size)).concat(d.r); Object.assign(stash.a, d.a || {});
+  let n = 0;
+  for (const m of metas) { if (m.man || m.orig) continue; const r = d.r.find(x => x.f === m.f && x.size === m.size); if (r && (r.man || r.orig)) { await attach(m, r); await put('meta', m); stash.r = stash.r.filter(x => x !== r); n++; } }
+  await stashSave(); return n;
+};
+E.detailsPending = () => stash.r.length;
+const AUDIO = /\.(mp3|m4a|aac|flac|ogg|opus|wav)$/i;
+async function addFiles(files) {
+  files = files.filter(f => AUDIO.test(f.name) || /^audio\//.test(f.type));
+  if (!files.length) { window.__libChanged && window.__libChanged('No songs found', true); return; }
+  let added = 0, skipped = 0, n = 0, back = 0;
   const day = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   for (const f of files) {
     n++; window.__libChanged && window.__libChanged('Adding ' + n + ' of ' + files.length + '…', false);
+    await new Promise(r => setTimeout(r, 0));
     if (metas.some(m => m.f === f.name && m.size === f.size)) { skipped++; continue; }
     const d = await duration(f);
     if (!d || d < 20000) { skipped++; continue; }
@@ -111,11 +145,85 @@ input.addEventListener('change', async () => {
     if (tg.pic && !artMap.has(key)) { const u = await thumb(tg.pic); if (u) { artMap.set(key, u); await put('art', u, key); hasArt = true; } } else if (artMap.has(key)) hasArt = true;
     const yy = tg.yo || tg.y || 0, yc = yy ? 0 : yearClue(f.name);
     const m = { id, g: tg.g || '', y: yy || yc, ys: yy ? 'tag' : yc ? 'name' : '', t: tg.t || f.name, a: tg.a, al: tg.al, d, p: tg.al ? tg.al : tg.a ? tg.a : 'Added ' + day, f: f.name, ad: Math.floor(Date.now() / 1000), size: f.size, ak: hasArt ? key : '' };
+    const r = await found(f, true);
+    if (r) { await attach(m, r); stash.r = stash.r.filter(x => x !== r); back++; }
     await put('files', f, id); await put('meta', m); metas.push(m); added++;
     if (n % 5 === 0) window.__libChanged && window.__libChanged('Adding ' + n + ' of ' + files.length + '…', true);
   }
-  window.__libChanged && window.__libChanged(added ? added + ' song' + (added === 1 ? '' : 's') + ' added' + (skipped ? ', ' + skipped + ' skipped' : '') : 'Nothing new to add', true);
-});
+  if (back) await stashSave();
+  window.__libChanged && window.__libChanged(added ? added + ' song' + (added === 1 ? '' : 's') + ' added' + (back ? ', ' + back + ' with your details back' : '') + (skipped ? ', ' + skipped + ' skipped' : '') : 'Nothing new to add', true);
+}
+input.addEventListener('change', () => addFiles([...input.files]));
+const dirIn = document.createElement('input'); dirIn.type = 'file'; dirIn.multiple = true; dirIn.setAttribute('webkitdirectory', ''); dirIn.style.display = 'none'; document.documentElement.appendChild(dirIn);
+E.pickFolder = () => { dirIn.value = ''; dirIn.click(); };
+dirIn.addEventListener('change', () => addFiles([...dirIn.files]));
+/* ---------- one-click tagged copies: your details written into copies of the songs, collected in zip files ----------
+   MP3 gets proper ID3 tags and the cover inside. Other formats are copied as they are and listed in a small table. */
+const crcT = (() => { const t = new Uint32Array(256); for (let i = 0; i < 256; i++) { let c = i; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[i] = c >>> 0; } return t; })();
+async function crcOf(blob) { let c = -1; for (let o = 0; o < blob.size; o += 1 << 20) { const u = new Uint8Array(await blob.slice(o, o + (1 << 20)).arrayBuffer()); for (let i = 0; i < u.length; i++) c = crcT[(c ^ u[i]) & 255] ^ (c >>> 8); } return (c ^ -1) >>> 0; }
+const te = new TextEncoder(), cc = ps => { let n = 0; ps.forEach(p => n += p.length); const o = new Uint8Array(n); let k = 0; ps.forEach(p => { o.set(p, k); k += p.length; }); return o; };
+const ss = n => [(n >>> 21) & 127, (n >>> 14) & 127, (n >>> 7) & 127, n & 127];
+const frm = (id, body, fl = [0, 0]) => cc([te.encode(id), Uint8Array.from(ss(body.length)), Uint8Array.from(fl), body]);
+const tfr = (id, v) => v === undefined || v === null || v === '' ? null : frm(id, cc([[3], te.encode(String(v))]));
+const OURS = new Set(['TIT2', 'TPE1', 'TALB', 'TYER', 'TDRC', 'TCON', 'TRCK', 'USLT', 'APIC']), V3ONLY = new Set(['TYER', 'TDAT', 'TIME', 'TRDA', 'TORY', 'IPLS', 'RVAD', 'EQUA', 'TSIZ']);
+async function oldTag(f) {
+  const h = new Uint8Array(await f.slice(0, 10).arrayBuffer());
+  if (h[0] !== 0x49 || h[1] !== 0x44 || h[2] !== 0x33) return { size: 0, frames: [] };
+  const ver = h[3], sz = (h[6] << 21) | (h[7] << 14) | (h[8] << 7) | h[9], total = 10 + sz + ((h[5] & 16) ? 10 : 0), frames = [];
+  if ((ver === 3 || ver === 4) && !(h[5] & 128)) {
+    const b = new Uint8Array(await f.slice(10, 10 + sz).arrayBuffer()); let o = 0;
+    if (h[5] & 64) o = ver === 4 ? ((b[0] << 21) | (b[1] << 14) | (b[2] << 7) | b[3]) : (b[0] * 16777216 + (b[1] << 16) + (b[2] << 8) + b[3] + 4);
+    while (o + 10 <= b.length && b[o]) {
+      const id = String.fromCharCode(b[o], b[o + 1], b[o + 2], b[o + 3]);
+      const fs = ver === 4 ? ((b[o + 4] << 21) | (b[o + 5] << 14) | (b[o + 6] << 7) | b[o + 7]) : (b[o + 4] * 16777216 + (b[o + 5] << 16) + (b[o + 6] << 8) + b[o + 7]);
+      if (fs < 0 || o + 10 + fs > b.length) break;
+      const ok = !OURS.has(id) && !(ver === 3 && (V3ONLY.has(id) || (b[o + 9] & 0xC0))) && !(ver === 4 && (b[o + 9] & 0x0C));
+      if (ok) frames.push(frm(id, b.slice(o + 10, o + 10 + fs), ver === 4 ? [b[o + 8], b[o + 9]] : [0, 0]));
+      o += 10 + fs;
+    }
+  }
+  return { size: total, frames };
+}
+async function tagged(m, f) {
+  const old = await oldTag(f), fr = [tfr('TIT2', m.t), tfr('TPE1', m.a), tfr('TALB', m.al), tfr('TDRC', m.y || ''), tfr('TCON', m.g), tfr('TRCK', m.n || '')];
+  if (m.ly) fr.push(frm('USLT', cc([[3], te.encode('eng'), [0], te.encode(m.ly)])));
+  const u = m.ak && artMap.get(m.ak);
+  if (u && /^data:image\/(jpeg|png);base64,/.test(u)) { const mi = u.slice(5, u.indexOf(';')), bin = atob(u.slice(u.indexOf(',') + 1)), by = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) by[i] = bin.charCodeAt(i); fr.push(frm('APIC', cc([[3], te.encode(mi), [0, 3, 0], by]))); }
+  const body = cc(fr.filter(Boolean).concat(old.frames)), head = cc([te.encode('ID3'), [4, 0, 0], Uint8Array.from(ss(body.length))]);
+  return new Blob([head, body, f.slice(old.size)], { type: 'audio/mpeg' });
+}
+const le = (n, b) => { const a = new Uint8Array(b); for (let i = 0; i < b; i++) a[i] = Math.floor(n / 2 ** (8 * i)) & 255; return a; };
+async function zipOf(items) {
+  const chunks = [], cd = []; let off = 0; const d = new Date(), tm = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1), dt = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  for (const it of items) {
+    const nm = te.encode(it.name), crc = it.crc !== undefined ? it.crc : await crcOf(it.blob), sz = it.blob.size;
+    const lh = cc([le(0x04034b50, 4), le(20, 2), le(0x0800, 2), le(0, 2), le(tm, 2), le(dt, 2), le(crc, 4), le(sz, 4), le(sz, 4), le(nm.length, 2), le(0, 2), nm]);
+    cd.push(cc([le(0x02014b50, 4), le(20, 2), le(20, 2), le(0x0800, 2), le(0, 2), le(tm, 2), le(dt, 2), le(crc, 4), le(sz, 4), le(sz, 4), le(nm.length, 2), le(0, 2), le(0, 2), le(0, 2), le(0, 2), le(0, 4), le(off, 4), nm]));
+    chunks.push(lh, it.blob); off += lh.length + sz;
+  }
+  const cdb = cc(cd), end = cc([le(0x06054b50, 4), le(0, 2), le(0, 2), le(items.length, 2), le(items.length, 2), le(cdb.length, 4), le(off, 4), le(0, 2)]);
+  return new Blob([...chunks, cdb, end], { type: 'application/zip' });
+}
+E.exportTagged = async (progress, cap = 400 * 1048576) => {
+  const used = new Set(), items = [], other = []; let mp3 = 0, n = 0;
+  for (const m of metas) {
+    n++; progress && progress(n, metas.length); await new Promise(r => setTimeout(r, 0));
+    const f = await getv('files', m.id); if (!f) continue;
+    let nm = (m.f || m.t || m.id).replace(/[\\/:*?"<>|]/g, '_'), k = 1; const base = nm.replace(/(\.[a-z0-9]{2,5})$/i, ''), ext = (nm.match(/\.[a-z0-9]{2,5}$/i) || [''])[0];
+    while (used.has(nm.toLowerCase())) nm = base + ' (' + (++k) + ')' + ext; used.add(nm.toLowerCase());
+    if (/\.mp3$/i.test(nm)) { try { items.push({ name: nm, blob: await tagged(m, f), size: m.size }); mp3++; continue; } catch (x) {} }
+    items.push({ name: nm, blob: f, size: m.size }); other.push(m);
+  }
+  const parts = []; let cur = [], sum = 0;
+  items.forEach(it => { if (cur.length && sum + it.blob.size > cap) { parts.push(cur); cur = []; sum = 0; } cur.push(it); sum += it.blob.size; });
+  if (cur.length) parts.push(cur);
+  const csv = '﻿file,title,artist,album,year,genre,track\n' + other.map(m => [m.f, m.t, m.a, m.al, m.y || '', m.g, m.n || ''].map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(',')).join('\n') + '\n';
+  const del = 'These files are now inside the tagged zip files. After you have unpacked them and checked the songs, you may delete the originals.\r\n\r\n' + items.map(i => i.name).join('\r\n') + '\r\n';
+  if (parts.length) { parts[0].unshift({ name: 'Originals you may delete.txt', blob: new Blob([del]) }); if (other.length) parts[0].unshift({ name: 'Details for other formats.csv', blob: new Blob([csv]) }); }
+  const out = [], day = new Date().toISOString().slice(0, 10);
+  for (let i = 0; i < parts.length; i++) { const b = await zipOf(parts[i]); out.push({ name: 'tagged-songs-' + day + (parts.length > 1 ? '-part-' + (i + 1) + '-of-' + parts.length : '') + '.zip', blob: b, count: parts[i].filter(x => x.size).length, size: b.size }); }
+  return { parts: out, mp3, other: other.length };
+};
 /* details found online or typed by hand: kept inside the app, with the originals so they can be restored */
 E.thumb = thumb;
 E.speed = r => { audio.defaultPlaybackRate = r; audio.playbackRate = r; try { audio.preservesPitch = true; } catch (x) {} };
@@ -131,7 +239,7 @@ E.setMeta = async (id, p, by) => {
   if (p.n !== undefined && take('n')) m.n = Math.max(0, +p.n || 0);
   if (p.art && take('art')) { const key = 'm:' + id; artMap.set(key, p.art); await (by === 'auto' ? lput : put)('art', p.art, key); m.ak = key; }
   if (p.artKey && artMap.has(p.artKey) && take('art')) m.ak = p.artKey;
-  if (by === 'me') m.man = man;
+  if (by === 'me') { m.man = man; try { MPS.set('mp_detat', Date.now()); } catch (x) {} }
   if (!did) { if (!by) { await put('meta', m); } return false; }
   if (/^Added /.test(m.p) && (m.al || m.a)) m.p = m.al || m.a;
   await (by === 'auto' ? lput : put)('meta', m); if (queue[index] === id) updateSession(); return true;
@@ -147,6 +255,7 @@ E.revertMeta = async id => {
   await put('meta', m); if (queue[index] === id) updateSession(); return true;
 };
 E.removeFolder = async name => {
+  keep(metas.filter(m => m.p === name)); stashSave();
   const gone = metas.filter(m => m.p === name).map(m => m.id);
   for (const id of gone) { await delv('files', id); await delv('meta', id); }
   metas = metas.filter(m => m.p !== name);
@@ -161,7 +270,7 @@ let idSeq = 0; function uniqId() { let id; do { id = String(Date.now()) + String
    Only this app's own copy is ever removed; the file on the phone is never touched. */
 let trash = [];
 const WEEK = 7 * 864e5;
-async function purge() { const old = trash.filter(m => Date.now() - m.rm > WEEK); for (const m of old) { try { await delv('files', m.id); await delv('meta', m.id); } catch (x) {} } trash = trash.filter(m => !old.includes(m)); }
+async function purge() { const old = trash.filter(m => Date.now() - m.rm > WEEK); if (old.length) { keep(old); stashSave(); } for (const m of old) { try { await delv('files', m.id); await delv('meta', m.id); } catch (x) {} } trash = trash.filter(m => !old.includes(m)); }
 const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
 /* one quiet pass: a content fingerprint and the genre for songs that lack them; n songs per call */
 E.index = async (n = 1) => {
@@ -358,7 +467,7 @@ audio.addEventListener('play', () => { try { navigator.mediaSession.playbackStat
 audio.addEventListener('pause', () => { try { navigator.mediaSession.playbackState = 'paused'; } catch (e) {} });
 
 /* ---------- the door (same names as the Android version) ---------- */
-E.version = () => '0.36 nord5 web';
+E.version = () => '0.37 nord5 web';
 E.hasPerm = () => true; E.askPerm = () => {};
 E.library = () => JSON.stringify(metas.map(m => ({ id: m.id, t: m.t, a: m.a, al: m.al, d: m.d, p: m.p, f: m.f, ad: m.ad, hk: !!m.ak, o: !!m.orig, mn: m.man ? Object.keys(m.man).join(',') : '', ly: !!m.ly, sz: m.size || 0, g: m.g || '', y: m.y || 0, ys: m.ys || '', yc: m.yc || 0, yv: m.yv || [], n: m.n || 0 })));
 E.names = () => {};
@@ -412,7 +521,7 @@ E.bars = (c) => { let t = document.querySelector('meta[name=theme-color]'); if (
 window.Android = E;
 
 window.__ready = (async () => {
-  try { db = await idb(); metas = await allv('meta'); trash = metas.filter(m => m.rm); metas = metas.filter(m => !m.rm); purge(); const keys = new Set(metas.map(m => m.ak).filter(Boolean)); try { (await tx('art', 'readonly', s => s.getAllKeys())).forEach(k => { if (/^(a|am|al):/.test(k)) keys.add(k); }); } catch (x) {} for (const k of keys) { const u = await getv('art', k); if (u) artMap.set(k, u); } } catch (e) { metas = []; }
+  try { db = await idb(); try { const sj = await getv('art', 'bk:details'); if (sj) stash = JSON.parse(sj); } catch (x) {} metas = await allv('meta'); trash = metas.filter(m => m.rm); metas = metas.filter(m => !m.rm); purge(); const keys = new Set(metas.map(m => m.ak).filter(Boolean)); try { (await tx('art', 'readonly', s => s.getAllKeys())).forEach(k => { if (/^(a|am|al):/.test(k)) keys.add(k); }); } catch (x) {} for (const k of keys) { const u = await getv('art', k); if (u) artMap.set(k, u); } } catch (e) { metas = []; }
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
   try { if (navigator.getBattery) { const b = await navigator.getBattery(); const f = () => { lowp = b.level < 0.2 && !b.charging; }; f(); b.addEventListener('levelchange', f); b.addEventListener('chargingchange', f); } } catch (e) {}
 })();

@@ -133,3 +133,5 @@ ReplayGain, waveform scrubber, mood groups, swipe for volume, double-tap bookmar
 - 0.35 mi11x: no visible change; the profile only adjusts how soon effects ease when the phone is warm.
 
 - 0.36 nord5: Lofi sounds never fall silent and no longer depend on the screen being idle. No new visible control yet (a health dot is planned).
+
+- 0.37 nord5: your work on song details can no longer be lost to a reset: it travels with the backup and comes back when the songs are added again. A banner tells you when details changed since the last backup. No automatic changes to your originals, ever; tagged copies are made only on request.

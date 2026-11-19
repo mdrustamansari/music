@@ -24,5 +24,10 @@ Rule: a device-specific build carries the device in the internal version tag and
 - Real-use tuning: Taste weights, Auto lists, smart-playlist rules.
 - Move Auto lists onto the smart-playlist engine.
 
+## Native app (needs the parked Android project)
+- Scan chosen music folders at first launch and add everything in the background; remember folders (including SD card).
+- Write tags and covers straight into the original files; if a file is read-only, offer one-click tagged export to one folder and an option to delete the untagged originals.
+- Tagged export for non-MP3 formats (m4a, flac, ogg).
+
 ## Paused
 - New skins: on hold by Rustam (18 Nov 2026). Mockups explored (Folio, Aurora Glass, Andalusian arabesque, Studio dashboard style); nothing was added to the app.

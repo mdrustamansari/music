@@ -348,3 +348,5 @@ Real recordings, levelled to one loudness, faded in and out, drifting slowly, ne
 - 0.35 mi11x: no visual change. Device profiles live in `V.profiles` (viz.js); a device build sets `window.MP_DEVICE` in engine.js.
 
 - 0.36 nord5: no visual change. Rule added: background sounds must never fail silently; the engine plans ahead, retries and falls back to made sounds.
+
+- 0.37 nord5: info banners inside pages use the pale-yellow tooltip gradient with 16 px corners (class tipbox bkn); two first-launch buttons sit side by side with a 10 px gap. Rule added: nothing the person typed is stored only in one place; it must be in the backup.

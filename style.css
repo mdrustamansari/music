@@ -910,3 +910,7 @@ html[data-skin=winamp] .skin{border-radius:0}html[data-skin=winamp] .skin svg{bo
 .optrow>div:nth-child(2){flex:1;min-width:0}.optrow .s1{text-align:left}
 .optrow>div:first-child{flex:none}
 .optrow>div:nth-child(2){text-align:left}.optrow>div:nth-child(2) .s1{text-align:left}
+/* 0.37 info banners inside pages, and the two first-launch buttons */
+.tipbox.bkn{margin:12px 0;border-radius:16px;padding:10px 14px}
+.tipbox.bkn .s1{color:var(--tip-fg)}.tipbox.bkn .s2{color:var(--tip-fg2)}
+.addrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
