@@ -1,0 +1,7 @@
+/* Shared info banner / tooltip surface for every app (Goal, Budget, Habit, Music).
+   A vertical gradient from off-white to the classic Windows tooltip yellow (#FFFFE1),
+   with a hairline border: top and bottom easy to see, left and right almost faint (same as the glass cards). */
+:root{--tip-top:#fdfdf7;--tip-bot:#ffffe1;--tip-fg:#2b2a22;--tip-fg2:rgba(43,42,34,.62);--tip-lnk:#8a5a00}
+.tipbox{background:linear-gradient(180deg,var(--tip-top),var(--tip-bot));color:var(--tip-fg);
+  border:1px solid transparent;border-top-color:rgba(120,110,60,.42);border-bottom-color:rgba(120,110,60,.5);border-left-color:rgba(120,110,60,.1);border-right-color:rgba(120,110,60,.1);
+  box-shadow:0 8px 22px rgba(60,50,10,.1),inset 0 1px 0 rgba(255,255,255,.9)}

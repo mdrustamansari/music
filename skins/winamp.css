@@ -1,0 +1,184 @@
+/* Skin: Winamp Classic 3. Graphite metal, copper stripes, silver buttons, green LCD.
+   Rules: one light from the top left; 1 px two-tone bevels (raised: light top-left, dark bottom-right; sunken: reverse);
+   limited palette (graphite, black, silver, copper, LCD green, peach for selection only); pixel type for labels, plain sans for reading.
+   Only materials, shapes and type change. The skeleton (layout, sizes, gestures) is untouched. */
+@font-face{font-family:"VT323";font-weight:400;font-display:swap;src:url(vt323.woff2) format("woff2")}
+@font-face{font-family:"DSEG7";font-weight:400;font-display:swap;src:url(dseg7.woff2) format("woff2")}
+@font-face{font-family:"Silk";font-weight:400;font-display:swap;src:url(silk.woff2) format("woff2")}
+html[data-skin=winamp]{
+  --bg:#4a4a4c;--fg:#f0f0f0;--fg2:#c9c3b4;--gl:#505052;--gb:#a9a9ab;--gs:rgba(0,0,0,.6);--sheen:transparent;--hair:#262627;--track:#0c0c0c;
+  --acc1:#43d55a;--acc2:#2fa845;--lnk:#f0c892;--onacc:#06140a;--blur:0px;--amb1:transparent;--amb2:transparent;--cs1:#43d55a;--cs2:#2fa845;--shade:0,0,0;--sa:0;--warn:#ff7a5a;
+  --k:#0c0c0c;--hi:#c9c9cb;--hi2:#a9a9ab;--lo:#262627;
+  --lcdt:#43d55a;--lcdd:#23803a;--cream:#ddd5c4;--cream2:#9d9684;--peach:#f0c892;--ptxt:#7a5426;
+  --cop1:#ecd0a8;--cop2:#b98757;--cop3:#5a3d22;
+  --sv:linear-gradient(135deg,#d3d3d4 0,#a4a4a6 55%,#8b8b8d);
+  --svb:inset 1px 1px 0 #f2f2f2,inset 2px 2px 0 #bdbdbf,inset -1px -1px 0 #515154,inset -2px -2px 0 #6f6f72;
+  --dn:linear-gradient(135deg,#7c7c7e,#9a9a9c);
+  --dnb:inset 1px 1px 0 #3b3b3d,inset 2px 2px 0 #5f5f61,inset -1px -1px 0 #d0d0d2;
+  --sunk:1px 1px 0 var(--hi2),-1px -1px 0 #151516;
+  --metal:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,rgba(0,0,0,.05) 1px 2px),linear-gradient(180deg,#6a6a6c,#4a4a4c 55%,#3d3d3f);
+}
+html[data-skin=winamp] body{font-weight:400}
+html[data-skin=winamp] .amb,html[data-skin=winamp] .shade,html[data-skin=winamp] .n,html[data-skin=winamp] .echo,html[data-skin=winamp] .sky,html[data-skin=winamp] .rip{display:none}
+html[data-skin=winamp] #app{background:var(--metal)}
+/* the window frame, drawn once over everything */
+html[data-skin=winamp] body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;border:2px solid var(--k);box-shadow:inset 1px 1px 0 var(--hi2),inset -1px -1px 0 var(--lo),inset 5px 5px 0 -4px #00000000}
+html[data-skin=winamp] :where(.g,.list,.card,.tabs,#mini,#pop,#smsheet,#toast,.seg,.spill,.th,.chip,.cell,.row .x,.tipbox,.pnl,.djfull,.smmos,.inp,.cb,.rcard,.vsw,.vth,.mc,.cards,.aav,.art125,.alone,.th.ic2,.qsheet,.skin,.skin svg){border-radius:0}
+
+/* raised metal panels */
+html[data-skin=winamp] .g{background:linear-gradient(180deg,#58585a,#434345);border:1px solid var(--k);box-shadow:inset 1px 1px 0 #8d8d90,inset -1px -1px 0 #262627;-webkit-backdrop-filter:none;backdrop-filter:none}
+html[data-skin=winamp] :where(#pop,#smsheet,.qsheet){background:var(--metal);border:1px solid var(--k);box-shadow:inset 1px 1px 0 var(--hi2),inset -1px -1px 0 var(--lo),0 0 0 1px #000}
+
+/* title strips: copper twin lines, pixel capitals */
+html[data-skin=winamp] :where(h1,h2){display:flex;align-items:center;gap:10px;font-family:"Silk",monospace;font-weight:400;letter-spacing:.08em;text-transform:uppercase;color:#f3f3f3;text-shadow:1px 1px 0 #000}
+html[data-skin=winamp] h1{font-size:clamp(20px,6vw,24px);line-height:1}
+html[data-skin=winamp] h2{font-size:13px;line-height:1}
+html[data-skin=winamp] :where(h1,h2):before,html[data-skin=winamp] :where(h1,h2):after{content:"";height:8px;border:1px solid var(--cop3);border-radius:1px;box-shadow:0 1px 0 #00000088;background:linear-gradient(180deg,var(--cop1) 0 2px,var(--cop3) 2px 3px,var(--cop2) 3px)}
+html[data-skin=winamp] :where(h1,h2):before{width:14px;flex:none}
+html[data-skin=winamp] :where(h1,h2):after{flex:1}
+html[data-skin=winamp] .lab{font:400 17px/1 "VT323",monospace;letter-spacing:.06em;color:var(--lcdt)}
+
+/* silver buttons, raised; pressed = sunken, no movement */
+html[data-skin=winamp] :where(.sec,.tl,.rnd,.blobbtn,.pillbtn,.djfull,.cell,.cb,.chp,.morb){background:var(--sv);color:#1c1c1c;border:1px solid var(--k);border-radius:0;box-shadow:var(--svb);filter:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+html[data-skin=winamp] :where(.sec,.tl,.rnd,.blobbtn,.pillbtn,.djfull,.chp,.morb):active{background:var(--dn);box-shadow:var(--dnb);transition:none}
+html[data-skin=winamp] :where(.sec,.tl,.rnd,.blobbtn) svg{filter:drop-shadow(1px 1px 0 #ffffffaa)}
+html[data-skin=winamp][data-theme] .blobbtn{background:var(--sv);color:#1c1c1c;border-radius:0;box-shadow:var(--svb);overflow:visible}
+html[data-skin=winamp][data-theme] .blobbtn:active{background:var(--dn);box-shadow:var(--dnb)}
+html[data-skin=winamp] .blobbtn.zero:before{border-radius:0;border-color:var(--lcdt)}
+/* toggles carry an LED, as the original EQ and PL buttons did */
+html[data-skin=winamp] .tl .dot{border-radius:0;width:6px;height:6px;background:#1b3a22;box-shadow:0 0 0 1px #0b1a0e;opacity:1}
+html[data-skin=winamp] .tl.on .dot{background:#3fe05a;box-shadow:0 0 0 1px #062}
+html[data-skin=winamp] .tl.on{background:var(--dn);box-shadow:var(--dnb);color:#1c1c1c}
+html[data-skin=winamp] .pillbtn,html[data-skin=winamp] .chp{min-height:40px;font:400 12px/1 "Silk",monospace;letter-spacing:.08em;text-transform:uppercase;text-shadow:1px 1px 0 #ffffff99}
+html[data-skin=winamp] .chp{min-height:0}
+html[data-skin=winamp] .pillbtn.on,html[data-skin=winamp] .chp.on{background:var(--dn);box-shadow:var(--dnb)}
+html[data-skin=winamp] .pillbtn.ghost{background:none;box-shadow:inset 1px 1px 0 #3b3b3d,inset -1px -1px 0 #8d8d90;color:var(--cream);text-shadow:1px 1px 0 #000}
+html[data-skin=winamp] .lnk{color:var(--lnk);font:400 15px/1 "VT323",monospace;letter-spacing:.05em;text-shadow:1px 1px 0 #000}
+
+/* the display: a black plate, green pixels */
+html[data-skin=winamp] .meta{background:#000;border:1px solid #000;box-shadow:var(--sunk),inset 1px 1px 0 #3a3a3b;margin:-4px -8px;padding:6px 10px;text-align:left}
+html[data-skin=winamp] .title{font:400 clamp(24px,7vw,28px)/1.05 "VT323",monospace;letter-spacing:.03em;color:var(--lcdt)}
+html[data-skin=winamp] .artist{font:400 19px/1 "VT323",monospace;letter-spacing:.03em;color:var(--lcdd)}
+html[data-skin=winamp] .times span{font:400 15px/1 "DSEG7",monospace;color:var(--lcdt);background:#000;padding:4px 7px;box-shadow:var(--sunk),inset 1px 1px 0 #3a3a3b;letter-spacing:.06em}
+html[data-skin=winamp] .times{margin-top:-4px}
+
+/* seek bar: a capsule groove, a silver thumb with three grips */
+html[data-skin=winamp] .bar u{height:12px;border-radius:6px;background:linear-gradient(180deg,#1a1a1b,#38383a);border:1px solid #111;box-shadow:inset 0 1px 2px #000,0 1px 0 var(--hi2);transition:none}
+html[data-skin=winamp] .bar b{height:4px;border-radius:2px;background:var(--lcdt);transition:none;margin-left:3px}
+html[data-skin=winamp] .bar s{width:30px;height:18px;margin-left:-15px;border-radius:0;background:repeating-linear-gradient(90deg,#222 0 1px,#f4f4f4 1px 2px,transparent 2px 4px) 50%/12px 8px no-repeat,linear-gradient(180deg,#dcdcdd,#9a9a9c);border:1px solid #000;box-shadow:inset 1px 1px 0 #fff,inset -1px -1px 0 #595959,0 1px 0 #000;transition:none}
+html[data-skin=winamp] .bar.drag u,html[data-skin=winamp] .bar.drag b{transform:none}
+html[data-skin=winamp] .bar.drag s{transform:none;filter:brightness(.88)}
+
+/* the cover sits in a sunken black frame */
+html[data-skin=winamp] .cover{border-radius:0;border:5px solid #000;box-shadow:var(--sunk),0 0 0 1px #3a3a3b}
+html[data-skin=winamp] .cover:after{display:none}
+html[data-skin=winamp] .heart{filter:none}
+
+/* tabs: three joined silver keys; the pill is the pressed one */
+html[data-skin=winamp] .tabs{background:none;border:0;box-shadow:none;padding:0;gap:0}
+html[data-skin=winamp] .tabs button{font:400 11px/1 "Silk",monospace;letter-spacing:.1em;text-transform:uppercase;color:#1c1c1c;text-shadow:1px 1px 0 #ffffff99;background:var(--sv);border:1px solid var(--k);box-shadow:var(--svb);margin-left:-1px;transition:color .3s}
+html[data-skin=winamp] .tabs button:first-of-type{margin-left:0}
+html[data-skin=winamp] .tabs button.on{color:#f2f2f2;text-shadow:1px 1px 0 #000;background:var(--dn);box-shadow:var(--dnb)}
+html[data-skin=winamp] .tabs .pill{display:none}
+html[data-skin=winamp] .seg{background:none;border:0;box-shadow:none;padding:0}
+html[data-skin=winamp] .seg button{font:400 11px/1 "Silk",monospace;letter-spacing:.08em;text-transform:uppercase;color:#1c1c1c;text-shadow:1px 1px 0 #ffffff99;background:var(--sv);border:1px solid var(--k);box-shadow:var(--svb);margin-left:-1px}
+html[data-skin=winamp] .seg button.on{color:#f2f2f2;text-shadow:1px 1px 0 #000;background:var(--dn);box-shadow:var(--dnb)}
+html[data-skin=winamp] .seg .spill{display:none}
+html[data-skin=winamp] .spill{background:var(--dn);border:1px solid var(--k);box-shadow:var(--dnb)}
+html[data-skin=winamp] #mini{background:var(--metal)}
+html[data-skin=winamp] #mini b{font:400 21px/1 "VT323",monospace;color:var(--lcdt)}
+html[data-skin=winamp] #mini span{font:400 17px/1 "VT323",monospace;color:var(--lcdd)}
+html[data-skin=winamp] .vsw{background:#000;border:1px solid #000;box-shadow:var(--sunk)}
+html[data-skin=winamp] .vth{background:var(--dn);box-shadow:var(--dnb);border:1px solid #000}
+
+/* lists: black plate, cream text, peach selection with brown text */
+html[data-skin=winamp] #libbox .list.g,html[data-skin=winamp] .qlist,html[data-skin=winamp] #pop .list.g{background:#000;border:1px solid #000;box-shadow:var(--sunk),inset 1px 1px 0 #3a3a3b}
+html[data-skin=winamp] #libbox .row+.row{border-top:0}
+html[data-skin=winamp] #libbox :where(.rt1){color:var(--cream);font-weight:400;letter-spacing:-.1px}
+html[data-skin=winamp] #libbox :where(.rt2){color:var(--cream2);font-weight:400}
+html[data-skin=winamp] .row.cur{background:var(--peach)}
+html[data-skin=winamp] .row.cur .rt1{color:var(--ptxt)}html[data-skin=winamp] .row.cur .rt2{color:var(--ptxt);opacity:.8}
+html[data-skin=winamp] .row .nt{color:var(--cream)}html[data-skin=winamp] .row .edge{border-radius:0;background:var(--peach)}
+html[data-skin=winamp] .row .th{border-radius:0;box-shadow:0 0 0 1px #3a3a3b}
+html[data-skin=winamp] .smnew{background:#000;color:var(--lcdt);border:1px dashed var(--lcdd);font:400 19px/1 "VT323",monospace}
+html[data-skin=winamp] .search.g{background:#000;border:1px solid #000;box-shadow:var(--sunk),inset 1px 1px 0 #3a3a3b}
+html[data-skin=winamp] .search input{color:var(--lcdt);font:400 20px/1 "VT323",monospace;letter-spacing:.04em}
+html[data-skin=winamp] .search input::placeholder{color:var(--lcdd)}
+html[data-skin=winamp] .sech,html[data-skin=winamp] .smgh{font:400 12px/1 "Silk",monospace;letter-spacing:.08em;color:var(--lnk);opacity:1;text-shadow:1px 1px 0 #000}
+
+/* settings: rows sit on the metal, divided by dashed lines like the dB markers */
+html[data-skin=winamp] #setbox .list.g,html[data-skin=winamp] #setbox .card.g{background:none;border:0;box-shadow:none}
+html[data-skin=winamp] .setrow+.setrow{border-top:1px dashed #8d8d90}
+html[data-skin=winamp] .s1{color:#f0f0f0;font-weight:400;text-shadow:1px 1px 0 #000}
+html[data-skin=winamp] .s2,html[data-skin=winamp] .sub,html[data-skin=winamp] .hint{color:var(--fg2);font-weight:400;text-shadow:1px 1px 0 #000}
+html[data-skin=winamp] .skin{background:var(--sv);border:1px solid var(--k);box-shadow:var(--svb);color:#1c1c1c}
+html[data-skin=winamp] .skin .sks{color:#3a3a3c}
+html[data-skin=winamp] .skin svg{box-shadow:var(--sunk)}
+html[data-skin=winamp] .skin.sel{background:var(--dn);box-shadow:var(--dnb);color:#f2f2f2}
+html[data-skin=winamp] .skin.sel .sks{color:#ddd}
+
+/* switches: black well, silver block, a green LED beside it */
+html[data-skin=winamp] .sw{width:46px;height:24px;border-radius:0;background:#000;border:1px solid #000;box-shadow:var(--sunk)}
+html[data-skin=winamp] .sw.on{background:#06260d}
+html[data-skin=winamp] .sw i{top:2px;left:2px;width:20px;height:18px;border-radius:0;background:var(--sv);border:1px solid #000;box-shadow:inset 1px 1px 0 #fff,inset -1px -1px 0 #595959}
+html[data-skin=winamp] .sw.on:before{content:"";position:absolute;left:8px;top:8px;width:6px;height:6px;background:#3fe05a;box-shadow:0 0 0 1px #062}
+
+/* sliders: capsule groove, silver grip thumb */
+html[data-skin=winamp] input[type=range]{accent-color:var(--lcdt);height:12px;border-radius:6px;background:linear-gradient(180deg,#1a1a1b,#38383a)!important;border:1px solid #111;box-shadow:inset 0 1px 2px #000,0 1px 0 var(--hi2)}
+html[data-skin=winamp] input[type=range]::-webkit-slider-thumb{border-radius:0!important;background:repeating-linear-gradient(90deg,#222 0 1px,#f4f4f4 1px 2px,transparent 2px 4px) 50%/10px 7px no-repeat,linear-gradient(180deg,#dcdcdd,#9a9a9c)!important;border:1px solid #000!important;box-shadow:inset 1px 1px 0 #fff,inset -1px -1px 0 #595959!important}
+html[data-skin=winamp] input[type=range]::-moz-range-thumb{border-radius:0;background:linear-gradient(180deg,#dcdcdd,#9a9a9c);border:1px solid #000}
+html[data-skin=winamp] .setrow .v,html[data-skin=winamp] .rng .v{color:var(--peach);font:400 17px/1 "VT323",monospace}
+html[data-skin=winamp] .inp,html[data-skin=winamp] input[type=text],html[data-skin=winamp] textarea{background:#000;color:var(--lcdt);border:1px solid #000;box-shadow:var(--sunk),inset 1px 1px 0 #3a3a3b;font-family:"VT323",monospace;font-size:20px;border-radius:0}
+
+/* sheets, messages */
+html[data-skin=winamp] #toast{background:#000;color:var(--lcdt);border:1px solid #000;box-shadow:var(--sunk);font:400 19px/1.1 "VT323",monospace}
+html[data-skin=winamp] #pop h3{font:400 14px/1 "Silk",monospace;letter-spacing:.08em;text-transform:uppercase;color:#f3f3f3;text-shadow:1px 1px 0 #000}
+html[data-skin=winamp] .cell{color:#1c1c1c}
+html[data-skin=winamp] :where(.cell .smic,.chip .smic,.th.smic){background:#000;color:var(--lcdt);border-radius:0;border:1px solid #000;box-shadow:var(--sunk)}
+html[data-skin=winamp] .smbig{font:400 50px/1 "DSEG7",monospace;color:var(--lcdt)}
+html[data-skin=winamp] .smlive{background:#000}
+html[data-skin=winamp] .chip{background:#000;border:1px solid #000;box-shadow:var(--sunk)}
+html[data-skin=winamp] .chip .cb{background:none;border:0;box-shadow:none;color:var(--lcdt)}html[data-skin=winamp] .chip .t1{font:400 19px/1 "VT323",monospace;color:var(--lcdt)}
+html[data-skin=winamp] .chip .bar{border-radius:0;background:#0e2a0e}html[data-skin=winamp] .chip .bar b{border-radius:0;background:var(--lcdt)}
+html[data-skin=winamp] #mrow .mc,html[data-skin=winamp] #mrow .mc *{border-radius:0!important;animation:none}
+
+html[data-skin=winamp] button:not(.sr),html[data-skin=winamp] .morb,html[data-skin=winamp] .rnd{border-radius:0!important}
+
+/* corrections after the first look (more specific than the base rules) */
+html[data-skin=winamp]{--acc1:#43d55a!important;--acc2:#2fa845!important;--cs1:#43d55a!important;--cs2:#2fa845!important;--lnk:#f0c892!important}
+html[data-skin=winamp] .hd>div:first-child{flex:1}
+html[data-skin=winamp] :where(.ah-t,.alb-h)>h1{display:block}
+html[data-skin=winamp] :where(.ah-t,.alb-h)>h1:before,html[data-skin=winamp] :where(.ah-t,.alb-h)>h1:after{display:none}
+html[data-skin=winamp] .chp{min-height:34px;padding:0 12px;font-size:10px}
+html[data-skin=winamp] #libbox .list.g,html[data-skin=winamp] #libbox .row{background-color:#000!important}
+html[data-skin=winamp] #libbox .row.cur{background-color:var(--peach)!important}
+html[data-skin=winamp] #libbox .row .rt1{color:var(--cream)!important}
+html[data-skin=winamp] #libbox .row .rt2{color:var(--cream2)!important}
+html[data-skin=winamp] #libbox .row.cur .rt1,html[data-skin=winamp] #libbox .row.cur .rt2{color:var(--ptxt)!important}
+html[data-skin=winamp] #libbox .row .nt,html[data-skin=winamp] #libbox .row .x{color:var(--cream)}
+html[data-skin=winamp] .addb{background:var(--sv);box-shadow:var(--svb);color:#1c1c1c}
+html[data-skin=winamp] .addb svg{color:#1c1c1c;stroke:#1c1c1c}
+html[data-skin=winamp] .hd>div:first-child{margin-right:14px}
+html[data-skin=winamp] :where(.smic,.th.smic,.cell .smic,.chip .smic,.skin svg,.vsw button,.vth){border-radius:0!important}
+
+/* the control rows become two joined strips on one grid (as the original's key blocks were), edge to edge with the seek bar */
+html[data-skin=winamp] .ctl{gap:0;justify-content:stretch;align-items:stretch;margin:12px 0 0}
+html[data-skin=winamp] .ctl .sec{flex:1;width:auto;height:64px}
+html[data-skin=winamp] .ctl .pbw{flex:1.35;width:auto;height:64px;margin:0 -1px;z-index:1}
+html[data-skin=winamp] .ctl .pbw .blobbtn{width:100%;height:100%}
+html[data-skin=winamp] .ctl .blobbtn svg{width:30px;height:30px}
+html[data-skin=winamp] .tools{padding:0;margin-top:10px;gap:0;justify-content:stretch}
+html[data-skin=winamp] .tools .tl{flex:1;width:auto;height:46px;margin-left:-1px}
+html[data-skin=winamp] .tools .tl:first-child{margin-left:0}
+html[data-skin=winamp] .tl .dot{transform:scale(1)!important;bottom:5px}
+html[data-skin=winamp] .tl.on .dot{background:#3fe05a;box-shadow:0 0 0 1px #062}
+html[data-skin=winamp] .tools .tl svg{margin-top:-5px}
+html[data-skin=winamp] .tools .tl{opacity:1!important}
+/* state is shown by the pressed key and a green glyph; no stray LED under one key only */
+html[data-skin=winamp] .tools .tl .dot{display:none}
+html[data-skin=winamp] .tools .tl svg{margin-top:0}
+html[data-skin=winamp] .tools .tl.on{color:#0b5a1c}
+html[data-skin=winamp] .tools .tl.on svg{filter:drop-shadow(1px 1px 0 #ffffff88)}
+html[data-skin=winamp] #pop,html[data-skin=winamp] #nvmsg{border-radius:0!important}
+html[data-skin=winamp] :where(.tdb,.tdk){border-radius:0;background:#000;color:var(--cream)}
+html[data-skin=winamp] .tdk span{white-space:nowrap}

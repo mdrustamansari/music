@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="color-scheme" content="light dark">
+<title>Rustam's Music</title>
+<link rel="stylesheet" href="tooltip.css">
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#f6f7fa">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>try{var j=JSON.parse(localStorage.getItem('mp_set')||'{}');if(j.skin==='winamp'){var d=document.documentElement;d.dataset.skin='winamp';d.dataset.theme='dark';var l=document.createElement('link');l.id='skincss';l.rel='stylesheet';l.href='skins/winamp.css';document.head.appendChild(l)}}catch(e){}</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><filter id="goo" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceGraphic" stdDeviation=".9" result="b"/><feColorMatrix in="b" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 22 -9"/></filter></defs></svg>
+<div id="app">
+  <div class="amb"><i id="b1"></i><i id="b2"></i></div>
+  <div class="shade"></div>
+  <main>
+    <section id="v-play" class="view on" aria-label="Playing">
+      <div class="echo" id="echo" aria-hidden="true"><canvas class="sky" id="sky"></canvas></div>
+      <div class="top">
+        <span class="lab" id="from">Nothing playing</span><button class="djfull" id="djfull" type="button" aria-label="Play this song in full" tabindex="-1"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><i class="djbar"><b id="djseg"></b></i></button>
+        <span class="slp"><button class="rnd md" id="djb" type="button" aria-label="DJ mode" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h16M4 16h16"/><rect class="k1" x="6" y="5" width="4.5" height="6" rx="1.4"/><rect class="k2" x="13.5" y="13" width="4.5" height="6" rx="1.4"/></svg></button><button class="rnd md" id="lofib" type="button" aria-label="Lofi mode" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a4 4 0 010-8 5.5 5.5 0 0110.6 1.2A3.4 3.4 0 0117 18z"/><path class="dr d1" d="M9 21l.8-1.6" opacity=".7"/><path class="dr d2" d="M13 21l.8-1.6" opacity=".7"/></svg></button><span id="sleeptxt" class="lab"></span>
+        <button class="rnd" id="sleepchip" type="button" aria-label="Listening options"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="moon" d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z" style="transform-origin:12px 12px"/><circle id="ring" cx="12" cy="12" r="8.5" stroke-dasharray="53.4" stroke-dashoffset="53.4" transform="rotate(-90 12 12)" opacity="0"/></svg></button></span>
+      </div>
+      <div class="sp sp1" aria-hidden="true"></div>
+      <div class="hero" id="hero">
+        <div class="coverbox" id="coverbox">
+          <div class="cover jel" id="cover"><span id="coverletter">♪</span></div>
+          <i class="heart" id="heart"></i>
+          <div class="chost" id="smallc"></div>
+        </div>
+        <div class="chost big jel" id="bigc"></div>
+        <div class="art125" id="art125" aria-hidden="true"></div>
+        <button class="sr" id="srprev" type="button">Previous song</button>
+        <button class="sr" id="srnext" type="button">Next song</button>
+      </div>
+      <div class="alone hid" id="alone"><div class="th" id="aloneth"></div><span id="alonetxt"></span><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h13a3 3 0 010 6H8M8 11L4 8l4-3M4 16h8"/></svg></div>
+      <div class="qly" id="qly" aria-label="Lyrics" aria-live="off"><div class="qlyt" id="qlyt"></div></div>
+      <div class="strip" id="strip" aria-hidden="true"><canvas class="vz" id="vz"></canvas></div>
+      <div class="sp sp2" aria-hidden="true"></div>
+      <div class="below" id="below">
+      <div class="mrow" id="mrow" role="group" aria-label="Up next"><div class="mph" id="mph"></div><div class="msc" id="msc"></div></div>
+      <div class="ins" id="ins" aria-label="About this song"><div class="chips" id="chips"></div><div class="cards" id="cards"></div><div class="idots" id="idots"></div></div>
+      <div class="pnl" id="pnl">
+        <div class="vsw" id="vsw" role="group" aria-label="Show cover or lyrics" data-sel="cover"><i class="vth"></i><button type="button" data-v="cover" aria-label="Show cover"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="3.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 3.5 3 3-2.5 4.5 4"/></svg></button><button type="button" data-v="lyrics" aria-label="Show lyrics"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9"/></svg></button></div>
+        <div class="meta"><div class="title" id="title">Pick something to play</div><div class="artist" id="artist">Open Library to begin</div></div>
+        <div class="scrub"><div class="bar" id="bar" role="slider" aria-label="Position" tabindex="0"><canvas class="dotsbar" id="dotsbar" aria-hidden="true"></canvas><u></u><b id="barf"></b><s id="knob"></s></div><div class="times"><span id="tcur">0:00</span><span id="tdur">0:00</span></div></div>
+        <div class="ctl">
+          <button class="sec" id="bprev" type="button" aria-label="Previous"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6h2v12H6zM20 6v12l-10-6z" fill="currentColor" stroke="none"/></svg></button>
+          <div class="pbw"><canvas id="rip" class="rip"></canvas><button class="blobbtn" id="bplay" type="button" aria-label="Play"><svg viewBox="0 0 24 24" width="38" height="38" fill="currentColor" aria-hidden="true"><g><polygon/><polygon/></g></svg></button></div>
+          <button class="sec" id="bnext" type="button" aria-label="Next"><svg class="ic" viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM4 6v12l10-6z" fill="currentColor" stroke="none"/></svg></button>
+        </div>
+        <div class="tools">
+          <button class="tl" id="lshuf" type="button" aria-label="Shuffle"><svg class="ic" viewBox="0 0 24 24"><path d="M3 7h3c5 0 5 10 10 10h4M3 17h3c1.6 0 2.7-.7 3.6-1.8M14.4 8.8C15.3 7.7 16.4 7 18 7h2M17 4l3 3-3 3M17 14l3 3-3 3"/></svg><i class="dot"></i></button>
+          <button class="tl" id="qopen" type="button" aria-label="Queue"><svg class="ic" viewBox="0 0 24 24"><path id="ql1" d="M4 7h12"/><path id="ql2" d="M4 12h12"/><path id="ql3" d="M4 17h7"/><path d="M17 15l4 2.5-4 2.5z" fill="currentColor"/></svg></button>
+          <button class="tl" id="lvol" type="button" aria-label="Volume"><svg class="ic" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 010 6M18 6.5a7.5 7.5 0 010 11"/></svg></button>
+          <button class="tl" id="lrep" type="button" aria-label="Repeat off"><svg class="ic" viewBox="0 0 24 24"><g id="replp" style="transform-origin:12px 12px"><path d="M17 3l3 3-3 3M4 11V9a3 3 0 013-3h13M7 21l-3-3 3-3M20 13v2a3 3 0 01-3 3H4"/></g><text id="repone" x="9.3" y="15" font-size="8" fill="currentColor" stroke="none" style="transform-origin:12px 12px" font-family="Inter,sans-serif">1</text></svg></button>
+        </div>
+      </div>
+      </div>
+      <div class="qsheet g" id="qsheet">
+        <div class="qhead"><span class="lab" id="qlab">Up next</span><span class="qbtns"><button class="lnk sm" id="qtidy" type="button" aria-label="Tidy the queue"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg></button><button class="lnk sm" id="qclose" type="button">Close</button></span></div>
+        <div class="qlist" id="qlist"></div>
+      </div>
+    </section>
+    <section id="v-lib" class="view" aria-label="Library"><div class="scroll" id="libbox"></div></section>
+    <section id="v-set" class="view" aria-label="Settings"><div class="scroll" id="setbox"></div></section>
+  </main>
+
+  <div id="mini" class="g hid" role="button" tabindex="0" aria-label="Open player">
+    <div class="th jel" id="mth"></div><div class="chost mini" id="minic"></div>
+    <div class="mt"><b id="mtitle"></b><span id="martist"></span></div>
+    <button class="blobbtn small" id="mplay" type="button" aria-label="Play"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><g><polygon/><polygon/></g></svg></button>
+  </div>
+  <nav class="tabs g" aria-label="Main"><div class="pill"></div>
+    <button type="button" data-tab="play" class="on">Playing</button>
+    <button type="button" data-tab="lib">Library</button>
+    <button type="button" data-tab="set">Settings</button>
+  </nav>
+  <div class="n" aria-hidden="true"></div>
+  <div id="scrim" class="hid"></div>
+  <div id="pop" class="g hid" role="dialog"></div>
+  <div id="toast" class="g hid" role="status"></div>
+  <div id="live" class="sr" aria-live="polite"></div>
+</div>
+<script src="engine.js"></script>
+<script src="power.js"></script>
+<script src="skins.js"></script>
+<script src="taste.js"></script>
+<script src="smart.js"></script>
+<script src="motion.js"></script>
+<script src="companion.js"></script>
+<script src="net.js"></script>
+<script src="enrich.js"></script>
+<script src="prep.js"></script>
+<script src="amb.js"></script>
+<script src="fx.js"></script>
+<script src="dj.js"></script>
+<script src="orb.js"></script>
+<script src="viz.js"></script>
+<script src="app.js"></script>
+<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}</script>
+</body>
+</html>
