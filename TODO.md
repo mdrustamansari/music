@@ -20,7 +20,7 @@ Rule: a device-specific build carries the device in the internal version tag and
 - Test large libraries on real data.
 - Online music, opt-in.
 - Phase 5: consistency across Goal, Budget, Habit and Music (needs the latest files of the other apps).
-- Phone-only checks: phone call, unplugged headphones, battery statistics, Lofi sounds with the screen off after a hold, the 0.35 s tap wait.
+- Phone-only checks: gapless join on a real phone (the start lead adapts; check by ear on a live album), folder picker on Chrome Android, phone call, unplugged headphones, battery statistics, Lofi sounds with the screen off after a hold, the 0.35 s tap wait.
 - Real-use tuning: Taste weights, Auto lists, smart-playlist rules.
 - Move Auto lists onto the smart-playlist engine.
 
@@ -28,6 +28,9 @@ Rule: a device-specific build carries the device in the internal version tag and
 - Scan chosen music folders at first launch and add everything in the background; remember folders (including SD card).
 - Write tags and covers straight into the original files; if a file is read-only, offer one-click tagged export to one folder and an option to delete the untagged originals.
 - Tagged export for non-MP3 formats (m4a, flac, ogg).
+
+## Themes still to port from Goal and Budget (saved 2026-11-20)
+- Aurora, Paper (colour, texture, dot grid, graph, ruled lines, margins) and the eleven nature themes with their scenes and light/dark palettes; one look per theme.
 
 ## Paused
 - New skins: on hold by Rustam (18 Nov 2026). Mockups explored (Folio, Aurora Glass, Andalusian arabesque, Studio dashboard style); nothing was added to the app.

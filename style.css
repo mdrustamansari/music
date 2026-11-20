@@ -914,3 +914,27 @@ html[data-skin=winamp] .skin{border-radius:0}html[data-skin=winamp] .skin svg{bo
 .tipbox.bkn{margin:12px 0;border-radius:16px;padding:10px 14px}
 .tipbox.bkn .s1{color:var(--tip-fg)}.tipbox.bkn .s2{color:var(--tip-fg2)}
 .addrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+/* 0.38 add chooser: folder first */
+.addch{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;padding:0 16px calc(24px + env(safe-area-inset-bottom));opacity:0;transition:opacity .25s ease}
+.addch.on{opacity:1}.addsc{position:absolute;inset:0;background:rgba(0,0,0,.35)}
+.addcard{position:relative;width:100%;max-width:420px;border-radius:24px;padding:8px;transform:translateY(14px);transition:transform .3s cubic-bezier(.2,.9,.3,1)}
+.addch.on .addcard{transform:none}
+.addop{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;padding:14px 16px;border:0;border-radius:18px;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.addop.first{background:linear-gradient(160deg,var(--acc1),var(--acc2));color:var(--onacc);margin-bottom:6px;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+.addop.first .s2{color:inherit;opacity:.85}
+/* 0.40 Goal and Budget themes (same palettes as the shared flagship.css; the five dark ones and Champagne Gold) */
+html[data-theme=dark][data-th]{--onacc:#fff;--warn:#f08a82;--track:rgba(255,255,255,.1);--gs:rgba(0,0,0,.4)}
+html[data-theme=dark][data-th=royal]{--acc1:#f3d467;--acc2:#c99622;--lnk:#f1d884;--onacc:#1d1500;--fg:#ece6d8;--fg2:#a39c8c;--bg:#121017;--gl:rgba(34,31,40,.62);--gb:rgba(201,179,119,.2);--sheen:rgba(255,240,200,.05);--hair:rgba(201,179,119,.14);--amb1:#4a3a63;--amb2:#5e4a22;--cs1:#ece6d8;--cs2:#f1d884}
+html[data-theme=dark][data-th=midnight]{--acc1:#d6e832;--acc2:#92cc2e;--lnk:#e2f06e;--onacc:#101a04;--fg:#e1e9e4;--fg2:#8b9a91;--bg:#0d1210;--gl:rgba(26,34,30,.62);--gb:rgba(255,255,255,.09);--sheen:rgba(255,255,255,.05);--hair:rgba(255,255,255,.07);--amb1:#1f4a38;--amb2:#3d4a1a;--cs1:#e1e9e4;--cs2:#e2f06e}
+html[data-theme=dark][data-th=deepocean]{--acc1:#44d2ff;--acc2:#1f8fff;--lnk:#84e0ff;--onacc:#021019;--fg:#e2eaf0;--fg2:#8a98a4;--bg:#0c1117;--gl:rgba(24,33,42,.62);--gb:rgba(255,255,255,.09);--sheen:rgba(255,255,255,.05);--hair:rgba(255,255,255,.07);--amb1:#1b4d73;--amb2:#1f3f7a;--cs1:#e2eaf0;--cs2:#84e0ff}
+html[data-theme=dark][data-th=ember]{--acc1:#ff9a55;--acc2:#ff4f33;--lnk:#ffb07a;--onacc:#1d0802;--fg:#efe5dd;--fg2:#a89589;--bg:#14100e;--gl:rgba(40,32,29,.62);--gb:rgba(255,220,200,.1);--sheen:rgba(255,220,200,.05);--hair:rgba(255,220,200,.08);--amb1:#6a3328;--amb2:#6b2a2a;--cs1:#efe5dd;--cs2:#ffb07a}
+html[data-theme=dark][data-th=graphite]{--acc1:#8eaeff;--acc2:#6585ff;--lnk:#b0c4ff;--onacc:#050a1c;--fg:#e9eaec;--fg2:#9a9da3;--bg:#141415;--gl:rgba(42,44,48,.62);--gb:rgba(255,255,255,.09);--sheen:rgba(255,255,255,.05);--hair:rgba(255,255,255,.07);--amb1:#3b4252;--amb2:#2c3140;--cs1:#e9eaec;--cs2:#b0c4ff}
+/* Champagne Gold accent on Light and Dark */
+html[data-acc=gold]:not([data-theme=dark]){--acc1:#f3d36e;--acc2:#c9a43a;--lnk:#8f6d1d;--onacc:#33260a;--amb1:#f3e3a8;--bg:#f7f6f2;--track:#ece7d8;--cs2:#8f6d1d}
+html[data-acc=gold][data-theme=dark]{--acc1:#f3d36e;--acc2:#c9a43a;--lnk:#ecd484;--onacc:#33260a;--amb1:#5a4a1c;--bg:#18181a;--cs2:#ecd484}
+/* theme tiles */
+.thms{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.thm{display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 0;font-size:12px;color:var(--fg2);text-align:center;line-height:1.2}
+.thm i{display:block;width:100%;aspect-ratio:1;border-radius:20px;border:1px solid var(--hair);box-shadow:0 8px 18px var(--gs);transition:transform .4s var(--ease,ease),box-shadow .3s}
+.thm.on{color:var(--fg)}.thm.on i{outline:2px solid var(--acc2);outline-offset:3px}
+@media(max-width:380px){.thms{grid-template-columns:repeat(4,1fr);gap:8px}.thm{font-size:11px}}

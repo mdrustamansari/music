@@ -350,3 +350,8 @@ Real recordings, levelled to one loudness, faded in and out, drifting slowly, ne
 - 0.36 nord5: no visual change. Rule added: background sounds must never fail silently; the engine plans ahead, retries and falls back to made sounds.
 
 - 0.37 nord5: info banners inside pages use the pale-yellow tooltip gradient with 16 px corners (class tipbox bkn); two first-launch buttons sit side by side with a 10 px gap. Rule added: nothing the person typed is stored only in one place; it must be in the backup.
+
+- 0.38 nord5: the add chooser is a glass bottom card (24 px corners); the primary choice uses the accent gradient, the second is plain. No gap or fade is allowed between songs on a natural end.
+- 0.39 nord5: a setting that claims a behaviour shows a live count of it, so the person can verify it.
+- 0.40 nord5: themes use the same palette values as the shared flagship.css; a themed accent is never overridden by album colours. Theme tiles: 4 per row, 20 px squircle swatches, selected ring in the accent.
+- 0.41 nord5: Clean up page: switch, then slider with value beside label, then a list of what was found with one primary pill. Nothing is deleted; it moves to Recently removed.

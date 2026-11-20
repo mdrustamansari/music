@@ -135,3 +135,8 @@ ReplayGain, waveform scrubber, mood groups, swipe for volume, double-tap bookmar
 - 0.36 nord5: Lofi sounds never fall silent and no longer depend on the screen being idle. No new visible control yet (a health dot is planned).
 
 - 0.37 nord5: your work on song details can no longer be lost to a reset: it travels with the backup and comes back when the songs are added again. A banner tells you when details changed since the last backup. No automatic changes to your originals, ever; tagged copies are made only on request.
+
+- 0.38 nord5: albums and live recordings play through song to song without a pause. Adding music offers the whole folder first.
+- 0.39 nord5: gapless can be checked and switched off in Settings.
+- 0.40 nord5: eight themes shared with Goal and Budget; one tap, swatches show the look.
+- 0.41 nord5: loudness evened out from tags; clutter kept out of the library, always restorable.
