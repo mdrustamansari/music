@@ -140,3 +140,9 @@ ReplayGain, waveform scrubber, mood groups, swipe for volume, double-tap bookmar
 - 0.39 nord5: gapless can be checked and switched off in Settings.
 - 0.40 nord5: eight themes shared with Goal and Budget; one tap, swatches show the look.
 - 0.41 nord5: loudness evened out from tags; clutter kept out of the library, always restorable.
+- 0.42 nord5: Lofi carries on to the next song with the screen off; thunder plays as one smooth sound.
+- 0.43 nord5: Google pictures key box opens from Settings.
+- 0.44 nord5: picture search shows every source's result and lets you type words; add your own background sounds and save mixes.
+- 0.45 nord5: Google and Openverse removed; pictures still missing list; paged iTunes, Deezer and Cover Art Archive.
+- 0.46 nord5: sounds pan left and right by themselves; Right now card shows pan, drift and sound health.
+- 0.47 nord5: Winamp and skin system removed; sound seams hidden; leave out single cut sounds.

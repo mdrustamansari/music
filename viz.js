@@ -104,7 +104,6 @@ function fall(a, v, h, i, level, dt, wait = .4, g = 3.6) {
 }
 /* pixel colours climb in steps from the bottom row to the top row */
 function pix(t) {
-  if (V.pal === 'winamp' && V.col === 'spectrum') return t < .45 ? 'rgb(150,108,66)' : t < .75 ? 'rgb(201,162,114)' : 'rgb(236,208,168)';
   if (V.col === 'spectrum') return `hsl(${(170 + V.hue * .12 + Math.floor(t * 6) / 5 * 150) % 360},84%,${58 + t * 6}%)`;
   if (V.col === 'white') return `rgba(255,255,255,${(.55 + .4 * Math.floor(t * 4) / 3).toFixed(2)})`;
   if (V.col === 'grey') return dark ? 'rgb(178,186,202)' : 'rgb(120,129,148)';
@@ -159,7 +158,7 @@ function ledCss(t) {
   if (V.col === 'white') return 'rgb(' + Math.round(225 + 30 * t) + ',' + Math.round(232 + 23 * t) + ',255)';
   if (V.col === 'grey') return dark ? 'rgb(190,198,214)' : 'rgb(150,160,180)';
   if (V.col === 'accent') return t > .5 ? accent[0] : accent[1];
-  if (V.col === 'spectrum') return V.pal === 'winamp' ? (t < .55 ? 'rgb(150,108,66)' : t < .8 ? 'rgb(201,162,114)' : 'rgb(236,208,168)') : t < .55 ? 'rgb(70,230,120)' : t < .8 ? 'rgb(245,215,60)' : 'rgb(255,80,70)';
+  if (V.col === 'spectrum') return t < .55 ? 'rgb(70,230,120)' : t < .8 ? 'rgb(245,215,60)' : 'rgb(255,80,70)';
   return accent[0];
 }
 function lights(c, dt) {

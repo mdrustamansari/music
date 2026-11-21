@@ -355,3 +355,8 @@ Real recordings, levelled to one loudness, faded in and out, drifting slowly, ne
 - 0.39 nord5: a setting that claims a behaviour shows a live count of it, so the person can verify it.
 - 0.40 nord5: themes use the same palette values as the shared flagship.css; a themed accent is never overridden by album colours. Theme tiles: 4 per row, 20 px squircle swatches, selected ring in the accent.
 - 0.41 nord5: Clean up page: switch, then slider with value beside label, then a list of what was found with one primary pill. Nothing is deleted; it moves to Recently removed.
+- 0.42 nord5: the sound mixer shows one small status line (s2 size) under the mix chips.
+- 0.44 nord5: standing principle for all apps: show more than say, and be transparent wherever practical (status chips with counts and reasons, a health card, a waveform before saving). Source chips are 12 px pills with a status dot; picture tiles carry a small letter badge for their source.
+- 0.45 nord5: a review list shows what is missing (name, kind, song count) with one quiet Choose action per row; tile grid never compresses (flex none).
+- 0.46 nord5: motion is shown, not described: a dot per sound for pan, a bar for drifting level, a health dot; updated 2.5 times a second only while visible.
+- 0.47 nord5: themes are the only appearance system; left-out items look struck through and dim, not removed, so they can be switched back.

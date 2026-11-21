@@ -32,7 +32,8 @@ const useBuf = () => F.on && F.o.keep && F.o.slow >= 2;
 function rate() { const el = A().el; if (!el) return; const kp = !!F.o.keep; try { el.preservesPitch = kp; el.mozPreservesPitch = kp; el.webkitPreservesPitch = kp; } catch (e) {} const r = 1 - F.o.slow / 100; el.defaultPlaybackRate = r; el.playbackRate = r; }
 function killBuf(fast) { if (!bsrc) return; const s = bsrc; bsrc = null; try { const t = g.ac.currentTime; ch.bufG.gain.cancelScheduledValues(t); ch.bufG.gain.setTargetAtTime(0, t, fast ? .02 : .08); s.stop(t + (fast ? .1 : .4)); } catch (e) {} }
 function sync() { /* start the buffer where the element is, then hand the sound over */
-  if (!F.on || !bufR || !g) return; const el = A().el; killBuf(true); if (el.paused || !useBuf()) { tc(ch.elG.gain, 1, .1); return; }
+  if (!F.on || !bufR || !g) return; const el = A().el; killBuf(true);
+  if (bufR._id !== cur) { tc(ch.elG.gain, 1, .1); return; } if (el.paused || !useBuf()) { tc(ch.elG.gain, 1, .1); return; }
   const ac = g.ac, s = ac.createBufferSource(); s.buffer = bufR; s.connect(ch.bufG); const off = Math.min(bufR.duration - .05, Math.max(0, el.currentTime / bufR._r)); s.start(0, off); b0 = off; bt0 = ac.currentTime; bsrc = s;
   s.onended = () => { if (bsrc === s) bsrc = null; };
   const t = ac.currentTime; ch.bufG.gain.cancelScheduledValues(t); ch.bufG.gain.setValueAtTime(0, t); ch.bufG.gain.linearRampToValueAtTime(1, t + .25); ch.elG.gain.cancelScheduledValues(t); ch.elG.gain.setValueAtTime(ch.elG.gain.value, t); ch.elG.gain.linearRampToValueAtTime(0, t + .25);
@@ -40,6 +41,7 @@ function sync() { /* start the buffer where the element is, then hand the sound 
 function wire() {
   if (wired) return; wired = true; const el = A().el;
   ['pause', 'ended'].forEach(k => el.addEventListener(k, () => { if (F.on) { killBuf(); tc(ch.elG.gain, 1, .05); } }));
+  el.addEventListener('mp-track', () => {}); addEventListener('mp-track', () => { if (!F.on) return; const id = A().nowId && A().nowId(); if (id && id !== cur) F.track(id); });
   ['playing', 'seeked'].forEach(k => el.addEventListener(k, () => { if (F.on && bufR && useBuf()) sync(); }));
   drift = setInterval(() => { if (!F.on || !bsrc || !bufR) return; const el = A().el, pos = b0 + (g.ac.currentTime - bt0), want = el.currentTime / bufR._r; if (Math.abs(pos - want) > .35) sync(); }, 1000);
 }
@@ -47,8 +49,9 @@ let reqId = 0;
 function prepare(id) {
   bufR = null; killBuf(); if (ch) tc(ch.elG.gain, 1, .1); if (!F.on || !id || !useBuf() || !g) return;
   const my = ++reqId, r = 1 - F.o.slow / 100, d = A().el && A().el.duration; if (d && d > 720) return;
-  Prep.slowed(g.ac, id, r).then(b => { if (my !== reqId || !F.on || cur !== id) return; bufR = b; sync(); }).catch(() => {});
+  Prep.slowed(g.ac, id, r).then(b => { if (my !== reqId || !F.on || cur !== id) return; bufR = b; bufR._id = id; sync(); }).catch(() => {});
 }
+F.bufId = () => bufR && bufR._id;
 F.ready = () => !!(bufR && bsrc);
 F.track = id => { cur = id; if (F.on) prepare(id); };
 F.prefetch = id => { if (!F.on || !id || !useBuf() || !g) return; Prep.slowed(g.ac, id, 1 - F.o.slow / 100).catch(() => {}); };

@@ -9,8 +9,8 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 /* ---------- storage ---------- */
 let db = null;
 const idb = () => new Promise((res, rej) => {
-  const r = indexedDB.open('rustams-music', 1);
-  r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('meta', { keyPath: 'id' }); d.createObjectStore('files'); d.createObjectStore('art'); };
+  const r = indexedDB.open('rustams-music', 2);
+  r.onupgradeneeded = () => { const d = r.result; if (!d.objectStoreNames.contains('meta')) d.createObjectStore('meta', { keyPath: 'id' }); if (!d.objectStoreNames.contains('files')) d.createObjectStore('files'); if (!d.objectStoreNames.contains('art')) d.createObjectStore('art'); if (!d.objectStoreNames.contains('snd')) d.createObjectStore('snd'); };
   r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
 });
 const tx = (store, mode, fn) => new Promise((res, rej) => { const t = db.transaction(store, mode), s = t.objectStore(store), r = fn(s); t.oncomplete = () => res(r && r.result); t.onerror = () => rej(t.error); });
@@ -23,6 +23,8 @@ addEventListener('mp-track', () => setTimeout(lflush, 3500)); addEventListener('
 const getv = (store, key) => tx(store, 'readonly', s => s.get(key));
 const allv = store => tx(store, 'readonly', s => s.getAll());
 const delv = (store, key) => { LZ.delete(store + '|' + key); return tx(store, 'readwrite', s => s.delete(key)); };
+/* my own background sounds: prepared audio kept in its own store */
+E.sndPut = (id, blob) => put('snd', blob, id); E.sndGet = id => getv('snd', id); E.sndDel = id => delv('snd', id); E.sndKeys = () => tx('snd', 'readonly', s => s.getAllKeys());
 
 let metas = [], artMap = new Map();
 /* Shared storage with RAM first: reads come from memory; with Optimisation on, writes are gathered and sent to disk together
@@ -522,6 +524,7 @@ function swapIn(early) {
 }
 function joinNow() { if (nx && nx.el.readyState >= 2 && nx.id === queue[nextIdx()]) { E_gap.late = (E_gap.late || 0) + 1; return swapIn(false); } E_gap.miss = (E_gap.miss || 0) + 1; gapDrop(); return false; }
 E.gapless = on => { E_gap.on = !!on; if (!on) { clearTimeout(joinT); joinT = 0; gapDrop(); } };
+E.nowId = () => queue[index] || '';
 E.gapLag = ms => { startLag = ms / 1000; E_gap.fix = true; };
 E.gapInfo = () => ({ on: E_gap.on, joins: E_gap.n, late: E_gap.late || 0, miss: E_gap.miss || 0, lagMs: E_gap.last, lead: Math.round(startLag * 1000), ready: !!nx });
 function next() {
@@ -555,7 +558,7 @@ both('play', () => { try { navigator.mediaSession.playbackState = 'playing'; } c
 both('pause', () => { try { navigator.mediaSession.playbackState = 'paused'; } catch (e) {} });
 
 /* ---------- the door (same names as the Android version) ---------- */
-E.version = () => '0.41 nord5 web';
+E.version = () => '0.47 nord5 web';
 E.hasPerm = () => true; E.askPerm = () => {};
 E.library = () => JSON.stringify(metas.map(m => ({ id: m.id, t: m.t, a: m.a, al: m.al, d: m.d, p: m.p, f: m.f, ad: m.ad, hk: !!m.ak, o: !!m.orig, mn: m.man ? Object.keys(m.man).join(',') : '', ly: !!m.ly, sz: m.size || 0, g: m.g || '', y: m.y || 0, ys: m.ys || '', yc: m.yc || 0, yv: m.yv || [], n: m.n || 0, rg: m.rg === undefined ? null : m.rg, pk: m.pk || 0 })));
 E.names = () => {};

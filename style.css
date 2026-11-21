@@ -614,7 +614,7 @@ html[data-theme=light] .bms,html:not([data-theme=dark]) .bms{background:rgba(255
 .centre .lnk[hidden],#edauto[hidden]{display:none}
 
 /* 0.12 picture chooser */
-.pkgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 8px;max-height:52vh;overflow-y:auto;touch-action:pan-y}
+.pkgrid{flex:none;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 8px;max-height:52vh;overflow-y:auto;touch-action:pan-y}
 .pkc{all:unset;cursor:pointer;display:block;aspect-ratio:1/1;border-radius:14px;overflow:hidden;position:relative;-webkit-tap-highlight-color:transparent;box-shadow:0 0 0 .5px var(--hair,rgba(128,128,128,.35))}
 .pkc span{position:absolute;inset:0;transition:transform .5s ease,opacity .5s ease}
 .pkc:active span{transform:scale(.97)}
@@ -863,13 +863,6 @@ html[data-theme=dark]{--glo:rgba(6,8,14,.5)}
 .chip .t1{white-space:normal;line-height:1.25}
 .smlive{border-radius:22px}
 
-/* 0.26: skin chooser */
-.skins{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 6px}
-.skin{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:20px;text-align:left;border:1.5px solid var(--hair);background:color-mix(in srgb,var(--fg) 4%,transparent);transition:border-color .5s ease,box-shadow .5s ease}
-.skin svg{width:100%;height:auto;border-radius:12px;display:block}
-.skin .skn{font-size:15px;font-weight:400;margin-top:4px}.skin .sks{font-size:12.5px;color:var(--fg2)}
-.skin.sel{border-color:var(--acc2);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc2) 22%,transparent)}
-html[data-skin=winamp] .skin{border-radius:0}html[data-skin=winamp] .skin svg{border-radius:0}
 
 /* 0.26: the closed volume panel is fully inert (its invisible slider thumb used to catch touches and bring it back) */
 .volp{visibility:hidden;transition:opacity .45s ease,transform .6s var(--ease),visibility 0s linear .6s}
@@ -938,3 +931,19 @@ html[data-acc=gold][data-theme=dark]{--acc1:#f3d36e;--acc2:#c9a43a;--lnk:#ecd484
 .thm i{display:block;width:100%;aspect-ratio:1;border-radius:20px;border:1px solid var(--hair);box-shadow:0 8px 18px var(--gs);transition:transform .4s var(--ease,ease),box-shadow .3s}
 .thm.on{color:var(--fg)}.thm.on i{outline:2px solid var(--acc2);outline-offset:3px}
 @media(max-width:380px){.thms{grid-template-columns:repeat(4,1fr);gap:8px}.thm{font-size:11px}}
+/* 0.44 picture chooser: words, sources, badges; source health dots */
+.pkq{display:flex;gap:8px;align-items:center;margin:2px 0 8px}.pkq .fld{flex:1;min-width:0}.pkq .pillbtn{width:auto;flex:none;margin:0;padding:0 16px}
+.pksrc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.psc{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;font-size:12px;color:var(--fg2,#9aa);background:rgba(128,128,128,.18);-webkit-tap-highlight-color:transparent}
+.psc i{width:8px;height:8px;border-radius:50%;background:#999;opacity:.6}
+.psc.ok i{background:#3fb96a;opacity:1}.psc.bad i{background:#e5604d;opacity:1}.psc.again{color:var(--lnk,#6cf)}.psc.again i{display:none}
+.pkc{position:relative}.pkc::after{content:attr(data-b);position:absolute;left:6px;bottom:6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:rgba(0,0,0,.5);color:#fff;font-size:11px;line-height:18px;text-align:center;pointer-events:none}
+.pkc[data-b=""]::after{display:none}
+.hdot{width:12px;height:12px;border-radius:50%;flex:none;background:#3fb96a}.hdot.bad{background:#e5604d}
+/* 0.46 live sounds: pan position and drifting level */
+.lvx{padding:6px 0}.lvr{display:grid;grid-template-columns:1fr 92px 54px;align-items:center;gap:12px;padding:9px 16px}
+.lvn{font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lvp{position:relative;height:18px}.lvp u{position:absolute;left:0;right:0;top:8px;height:2px;border-radius:1px;background:rgba(128,128,128,.3)}
+.lvp i{position:absolute;top:3px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--lnk,#6cf);transition:left .45s linear;left:50%}
+.lvb{height:6px;border-radius:3px;background:rgba(128,128,128,.25);overflow:hidden}.lvb i{display:block;height:100%;border-radius:3px;background:var(--lnk,#6cf);transition:width .45s linear;width:0}
+#sdc .chp:not(.on){opacity:.5;text-decoration:line-through;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45);background:transparent}

@@ -45,7 +45,7 @@ async function viaWikidataSearch(name) {
   const hit = j && (j.search || []).find(x => n.sim(name, x.label) >= .8 && MUSIC.test(x.description || '')); return hit ? viaWikidata(hit.id) : null;
 }
 async function viaAudioDb(name) {
-  const j = await N().jget('https://www.theaudiodb.com/api/v1/json/2/search.php?s=' + encodeURIComponent(name));
+  const j = await N().jget(N().adb() + 'search.php?s=' + encodeURIComponent(name));
   const a = j && j.artists && j.artists[0]; if (!a || N().sim(name, a.strArtist) < .8) return null;
   return { title: a.strArtist, desc: '', bio: clean(a.strBiographyEN || ''), photo: a.strArtistThumb || a.strArtistFanart || '', lang: 'adb' };
 }
@@ -96,7 +96,7 @@ E.test = async () => {
     T('Wikipedia summaries', async () => { if (!await wikiSummary('en', 'Arijit Singh')) throw 0; }),
     T('Wikidata', async () => { if (!await N().jget('https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&origin=*&language=en&limit=1&search=Arijit+Singh')) throw 0; }),
     T('Hindi Wikipedia', async () => { if (!await wikiSummary('hi', 'अरिजीत सिंह')) throw 0; }),
-    T('TheAudioDB', async () => { if (!await N().jget('https://www.theaudiodb.com/api/v1/json/2/search.php?s=arijit%20singh')) throw 0; })
+    T('TheAudioDB', async () => { if (!await N().jget(N().adb() + 'search.php?s=arijit%20singh')) throw 0; })
   ]);
 };
 window.Enrich = E;

@@ -34,3 +34,10 @@ Rule: a device-specific build carries the device in the internal version tag and
 
 ## Paused
 - New skins: on hold by Rustam (18 Nov 2026). Mockups explored (Folio, Aurora Glass, Andalusian arabesque, Studio dashboard style); nothing was added to the app.
+
+## After 0.44 (saved 2026-11-21)
+- My sounds: edit cut sections by hand (remove single sounds), loop-point seam fades, sounds inside DJ mode, include audio in backups.
+- Pictures: confirm TheAudioDB CORS and Google key on the phone using the health card; if Google is closed to new keys, offer Bing or Pexels alternative.
+- 0.45 done: Google/Openverse removed. Still open: confirm TheAudioDB and Cover Art Archive images save on the phone (health card); My sounds items from 0.44 list.
+- 0.46 done: auto pan + live view. Next: seam fades for beds, manual removal of cut sounds, My sounds in DJ, phone jitter.
+- 0.47 done. Principle: improvement is continuous, no feature freeze. Next: 0.48 reliability (large library, phone jitter, audit), 0.49 smart parts (Auto lists on smart engine, tuning), later skins/themes (Aurora, Paper, nature) and new features.

@@ -5,7 +5,20 @@
 const N = {};
 const wait = ms => new Promise(r => setTimeout(r, ms));
 let lastCall = 0;
-async function mb(path) {
+/* how each source is doing: kept so the app can show it (works, blocked, too slow, key refused) and rest a source that keeps failing */
+const HOSTS = [['musicbrainz', 'MusicBrainz'], ['coverartarchive', 'Cover Art Archive'], ['itunes', 'iTunes'], ['deezer', 'Deezer'], ['wikimedia', 'Wikimedia Commons'], ['wikipedia', 'Wikipedia'], ['wikidata', 'Wikidata'], ['theaudiodb', 'TheAudioDB'], ['lrclib', 'LRCLIB'], ['lyrics.ovh', 'Lyrics.ovh']];
+const srcOf = u => { const h = String(u).split('/')[2] || ''; const x = HOSTS.find(k => h.includes(k[0])); return x ? x[1] : h; };
+const HLT = (() => { try { return JSON.parse(localStorage.getItem('mp_nethealth') || '{}'); } catch (e) { return {}; } })();
+let hsT = 0;
+function note(src, ok, why, ms) {
+  const h = HLT[src] = HLT[src] || { ok: 0, bad: 0, streak: 0 }; h.at = Date.now(); h.ms = ms;
+  if (ok) { h.ok++; h.streak = 0; h.why = ''; h.rest = 0; } else { h.bad++; h.streak++; h.why = why; if (h.streak >= 4) h.rest = Date.now() + 10 * 60000; }
+  clearTimeout(hsT); hsT = setTimeout(() => { try { localStorage.setItem('mp_nethealth', JSON.stringify(HLT)); } catch (e) {} }, 4000);
+}
+N.health = () => HLT; N.rested = src => !!(HLT[src] && HLT[src].rest > Date.now()); N.wake = () => Object.values(HLT).forEach(h => { h.rest = 0; h.streak = 0; });
+/* TheAudioDB: the shared free key is 123 (the older key 2 is no longer given out); a personal key can be set */
+N.adb = () => 'https://www.theaudiodb.com/api/v1/json/' + ((N.cfg && N.cfg.adbKey) || '123') + '/';
+async function mbRaw(path) {
   const gap = 1150 - (Date.now() - lastCall); lastCall = Date.now() + Math.max(0, gap); if (gap > 0) await wait(gap);
   for (let tryN = 0; tryN < 2; tryN++) {
     const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 12000);
@@ -18,6 +31,7 @@ async function mb(path) {
   }
   throw new Error('mb busy');
 }
+async function mb(path) { const t0 = Date.now(); try { const j = await mbRaw(path); note('MusicBrainz', true, '', Date.now() - t0); return j; } catch (e) { const m = String(e.message || ''); note('MusicBrainz', false, /busy|503/.test(m) ? 'Busy: it asks apps to go slower' : /^mb \d+/.test(m) ? 'The site answered "' + m.slice(3) + '"' : e.name === 'AbortError' ? 'Too slow (12 s)' : 'Blocked or offline: the site did not answer this app', Date.now() - t0); throw e; } }
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\(.*?\)|\[.*?\]/g, ' ').replace(/[^a-z0-9\u0900-\u097f\u0600-\u06ff]+/g, ' ').trim();
 const toks = s => norm(s).split(' ').filter(Boolean);
 function sim(a, b) {
@@ -143,14 +157,15 @@ N.find = async song => {
   if (bad === res.length) throw new Error('offline');
   return decide(song, res.flatMap(r => r.status === 'fulfilled' ? r.value : []));
 };
-N.test = async () => {
-  const T = (name, f) => Promise.race([f().then(n => ({ name, ok: true, note: n || 'works' }), e => ({ name, ok: false, note: 'blocked or unreachable' })), new Promise(r => setTimeout(() => r({ name, ok: false, note: 'too slow' }), 9000))]);
+N.test = async (g = {}) => {
+  N.wake(); const T = (name, f, src) => { const t0 = Date.now(); return Promise.race([f().then(n => ({ name, ok: true, note: n || 'works', ms: Date.now() - t0 }), e => ({ name, ok: false, note: (src && HLT[src] && HLT[src].why) || (e && e.message) || 'blocked or unreachable', ms: Date.now() - t0 })), new Promise(r => setTimeout(() => r({ name, ok: false, note: 'too slow', ms: 9000 }), 9000))]); };
   return Promise.all([
     T('iTunes India', async () => { const x = await itunesRaw({ t: 'Tum Hi Ho', a: 'Arijit Singh' }); if (!x.list.length) throw 0; try { const r = await fetch(big(x.list[0].artworkUrl100)); if (r.ok) { await r.blob(); return 'works, covers can be saved'; } } catch (e) {} return 'works, covers are linked online'; }),
     T('MusicBrainz', async () => { await mb('recording?fmt=json&limit=1&query=' + encodeURIComponent('recording:"Tum Hi Ho"')); }),
     T('Cover Art Archive', async () => { const r = await fetch('https://coverartarchive.org/release/76df3287-6cda-33eb-8e9a-044b5e15ffdd/front-250'); if (!r.ok) throw 0; await r.blob(); }),
     T('Lyrics (LRCLIB)', async () => { const j = await jget('https://lrclib.net/api/search?q=' + encodeURIComponent('Tum Hi Ho')); if (!Array.isArray(j)) throw 0; }),
-    T('Artist photos (TheAudioDB)', async () => { const j = await jget('https://www.theaudiodb.com/api/v1/json/2/search.php?s=Arijit+Singh'); if (!j || !j.artists) throw 0; }),
+    T('Artist photos (TheAudioDB)', async () => { const j = await jget(N.adb() + 'search.php?s=Coldplay'); if (!j || !j.artists) throw 0; }, 'TheAudioDB'),
+    T('Pictures (Wikimedia Commons)', async () => { const j = await jget('https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&list=search&srnamespace=6&srlimit=1&srsearch=Coldplay'); if (!j || !j.query) throw 0; }, 'Wikimedia Commons'),
     T('Artist photos (Deezer)', async () => { const j = await jsonp('https://api.deezer.com/search/artist?limit=1&q=Arijit+Singh'); if (!j || !j.data) throw 0; }),
     T('Artist info (Wikipedia)', async () => { const j = await jget('https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&list=search&srlimit=1&srsearch=Arijit+Singh'); if (!j || !j.query) throw 0; })
   ]);
@@ -162,9 +177,9 @@ const cap = (s, n = 4, max = 720) => { const p = String(s || '').replace(/\s+/g,
 const wide = u => String(u || '').replace(/\/(\d+)px-/, '/640px-');
 function jsonp(url) {
   return new Promise((res, rej) => {
-    const cb = 'dz' + Math.random().toString(36).slice(2), s = document.createElement('script');
-    const done = () => { clearTimeout(t); delete window[cb]; s.remove(); }, t = setTimeout(() => { done(); rej(new Error('slow')); }, 10000);
-    window[cb] = d => { done(); reach.ok++; res(d); }; s.onerror = () => { done(); rej(new Error('blocked')); };
+    const cb = 'dz' + Math.random().toString(36).slice(2), s = document.createElement('script'), t0 = Date.now();
+    const done = () => { clearTimeout(t); delete window[cb]; s.remove(); }, t = setTimeout(() => { done(); note('Deezer', false, 'Too slow (10 s)', 10000); rej(new Error('slow')); }, 10000);
+    window[cb] = d => { done(); reach.ok++; note('Deezer', true, '', Date.now() - t0); res(d); }; s.onerror = () => { done(); note('Deezer', false, 'Blocked or offline: the site did not answer this app', Date.now() - t0); rej(new Error('blocked')); };
     s.src = url + (url.includes('?') ? '&' : '?') + 'output=jsonp&callback=' + cb; document.head.appendChild(s);
   });
 }
@@ -188,7 +203,7 @@ async function mbWiki(n) {
   return { bio: cap(s.extract), photo: s.thumbnail ? wide(s.thumbnail.source) : '' };
 }
 async function audioDb(n) {
-  const j = await jget('https://www.theaudiodb.com/api/v1/json/2/search.php?s=' + encodeURIComponent(n));
+  const j = await jget(N.adb() + 'search.php?s=' + encodeURIComponent(n));
   const a = j && j.artists && j.artists.find(x => sim(n, x.strArtist) >= .85); if (!a) return null;
   return { bio: cap(a.strBiographyEN), photo: a.strArtistThumb || a.strArtistFanart || '' };
 }
@@ -249,7 +264,15 @@ N.covers = async song => {
 };
 /* lyrics: LRCLIB first, then lyrics.ovh. Both free, no account. */
 const plain = s => String(s || '').replace(/^\[[^\]]*\]\s*/gm, '').trim();
-async function jget(u) { const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 12000); try { const r = await fetch(u, { signal: ctl.signal }); if (!r.ok) return null; reach.ok++; return await r.json(); } catch (e) { return null; } finally { clearTimeout(t); } }
+async function jget(u) {
+  const src = srcOf(u), t0 = Date.now(), ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 12000);
+  try {
+    const r = await fetch(u, { signal: ctl.signal });
+    if (!r.ok) { note(src, false, 'The site answered "' + r.status + '"', Date.now() - t0); return null; }
+    const txt = await r.text(); let j; try { j = JSON.parse(txt); } catch (e) { note(src, false, /key/i.test(txt) ? 'The site says the key is not valid' : 'The site did not send usable data', Date.now() - t0); return null; }
+    reach.ok++; note(src, true, '', Date.now() - t0); return j;
+  } catch (e) { note(src, false, e.name === 'AbortError' ? 'Too slow (12 s)' : 'Blocked or offline: the site did not answer this app', Date.now() - t0); return null; } finally { clearTimeout(t); }
+}
 N.lyrics = async song => {
   const t = q(song.t), a = q(song.a || ''), d = song.d ? Math.round(song.d / 1000) : 0;
   if (!t) return '';
@@ -261,20 +284,37 @@ N.lyrics = async song => {
   return '';
 };
 
-/* picture chooser: nine best-match pictures per page (Google if the person added a key, then open sources) */
+/* picture chooser: nine best-match pictures per page. Albums: iTunes, then Cover Art Archive (found through MusicBrainz), then TheAudioDB. Artists: Deezer, TheAudioDB, Wikimedia Commons. */
+const PKC = (() => { try { return JSON.parse(localStorage.getItem('mp_pkcache') || '{}'); } catch (e) { return {}; } })();
+const pkSave = () => { const ks = Object.keys(PKC).sort((a, b) => PKC[b].at - PKC[a].at); ks.slice(30).forEach(k => delete PKC[k]); try { localStorage.setItem('mp_pkcache', JSON.stringify(PKC)); } catch (e) { for (const k of Object.keys(PKC).slice(0, 15)) delete PKC[k]; } };
+/* pictures for an artist or album from every source; the person's own words (kw) replace the automatic search words.
+   The list carries .report: one line per source (how many, or why none) so nothing is hidden. */
 N.pics = async (kind, name, artist, page = 0, g = {}) => {
-  const base = String(kind === 'album' ? (artist ? artist + ' ' : '') + name + ' album cover art' : name + ' singer portrait'), qs = encodeURIComponent(base), off = page * 9, lists = [];
-  if (g.key && g.cx) { const j = await jget(`https://www.googleapis.com/customsearch/v1?searchType=image&num=9&start=${off + 1}&key=${encodeURIComponent(g.key)}&cx=${encodeURIComponent(g.cx)}&q=${qs}`); lists.push(((j && j.items) || []).map(x => ({ u: x.link, t: (x.image && x.image.thumbnailLink) || x.link, s: 'Google' }))); }
-  const jobs = [
-    jget(`https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=9&gsroffset=${off}&gsrsearch=${encodeURIComponent(base + ' filetype:bitmap')}&prop=imageinfo&iiprop=url|mime&iiurlwidth=640`).then(j => Object.values((j && j.query && j.query.pages) || {}).sort((a, b) => (a.index || 0) - (b.index || 0)).map(p => p.imageinfo && p.imageinfo[0]).filter(x => x && /jpeg|png|webp/.test(x.mime || '')).map(x => ({ u: x.thumburl || x.url, t: x.thumburl || x.url, s: 'Wikimedia' }))),
-    jget(`https://api.openverse.org/v1/images/?page_size=9&page=${page + 1}&q=${qs}`).then(j => ((j && j.results) || []).map(x => ({ u: x.url, t: x.thumbnail || x.url, s: 'Openverse' })))
-  ];
-  if (!page) {
-    if (kind === 'album') jobs.push(jget('https://itunes.apple.com/search?media=music&entity=album&limit=9&term=' + encodeURIComponent((artist || '') + ' ' + name)).then(j => ((j && j.results) || []).map(x => ({ u: String(x.artworkUrl100 || '').replace(/\/\d+x\d+(bb)?\.(jpg|png)/, '/1000x1000bb.jpg'), t: x.artworkUrl100, s: 'iTunes' }))));
-    else jobs.push(jsonp('https://api.deezer.com/search/artist?limit=6&q=' + encodeURIComponent(name)).then(j => (j.data || []).filter(x => x.picture_xl).map(x => ({ u: x.picture_xl, t: x.picture_medium || x.picture_xl, s: 'Deezer' }))).catch(() => []));
+  const base = String(g.kw ? g.kw : kind === 'album' ? (artist ? artist + ' ' : '') + name + ' album cover art' : name + ' singer portrait'), qs = encodeURIComponent(base), off = page * 9, lists = [], report = [];
+  const ck = [kind, base, page].join('|');
+  if (!g.fresh && PKC[ck] && Date.now() - PKC[ck].at < 7 * 864e5) { const o = PKC[ck].list.slice(); o.report = PKC[ck].report.map(r => Object.assign({}, r, { cached: 1 })); o.q = base; return o; }
+  const run = async (src, fn, hs) => {
+    if (N.rested(src) && !g.fresh) { report.push({ s: src, n: 0, ok: false, why: 'Resting a few minutes after failing four times. Tap Try again to wake it.', ms: 0 }); return; }
+    const t0 = Date.now(); let L = []; try { L = await fn(); } catch (e) {}
+    const h = HLT[hs || src], failed = !L.length && h && h.at >= t0 && h.why;
+    L = L.filter(x => x.u); report.push({ s: src, n: L.length, ok: !failed, why: failed ? h.why : L.length ? '' : 'Nothing found for these words', ms: Date.now() - t0 }); if (L.length) lists.push(L);
+  };
+  const jobs = [];
+  if (kind !== 'album') jobs.push(run('Wikimedia Commons', () => jget(`https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=9&gsroffset=${off}&gsrsearch=${encodeURIComponent(base + ' filetype:bitmap')}&prop=imageinfo&iiprop=url|mime&iiurlwidth=640`).then(j => Object.values((j && j.query && j.query.pages) || {}).sort((a, b) => (a.index || 0) - (b.index || 0)).map(p => { const i = (p.imageinfo || [])[0]; return i && /^image\/(jpeg|png|webp)/.test(i.mime || '') ? { u: i.url, t: i.thumburl || i.url, s: 'Wikimedia' } : null; }).filter(Boolean))));
+  if (kind === 'album') {
+    jobs.push(run('iTunes', () => jget('https://itunes.apple.com/search?media=music&entity=album&limit=' + (off + 9) + '&term=' + encodeURIComponent(g.kw || ((artist || '') + ' ' + name))).then(j => ((j && j.results) || []).slice(off).map(x => ({ u: String(x.artworkUrl100 || '').replace(/\/\d+x\d+(bb)?\.(jpg|png)/, '/1000x1000bb.jpg'), t: x.artworkUrl100, s: 'iTunes' })))));
+    jobs.push(run('Cover Art Archive', () => mb('release-group?fmt=json&limit=9&offset=' + off + '&query=' + encodeURIComponent(g.kw || ('releasegroup:"' + name + '"' + (artist ? ' AND artist:"' + artist + '"' : '')))).then(j => ((j && j['release-groups']) || []).filter(x => x.id).map(x => ({ u: 'https://coverartarchive.org/release-group/' + x.id + '/front-1200', t: 'https://coverartarchive.org/release-group/' + x.id + '/front-250', s: 'Cover Art Archive' }))).then(async L => { const ok = await Promise.all(L.map(x => new Promise(r => { const im = new Image(); const t = setTimeout(() => r(false), 6000); im.onload = () => { clearTimeout(t); r(true); }; im.onerror = () => { clearTimeout(t); r(false); }; im.src = x.t; }))); return L.filter((x, i) => ok[i]); }), 'MusicBrainz'));
+    if (!page) jobs.push(run('TheAudioDB', () => artist ? jget(N.adb() + 'searchalbum.php?s=' + encodeURIComponent(artist) + '&a=' + encodeURIComponent(name)).then(j => ((j && j.album) || []).map(x => ({ u: x.strAlbumThumbHQ || x.strAlbumThumb, t: x.strAlbumThumb, s: 'TheAudioDB' }))) : Promise.resolve([])));
+  } else {
+    jobs.push(run('Deezer', () => jsonp('https://api.deezer.com/search/artist?limit=9&index=' + off + '&q=' + encodeURIComponent(g.kw || name)).then(j => (j.data || []).filter(x => x.picture_xl).map(x => ({ u: x.picture_xl, t: x.picture_medium || x.picture_xl, s: 'Deezer' })))));
+      if (!page) jobs.push(run('TheAudioDB', () => jget(N.adb() + 'search.php?s=' + encodeURIComponent(g.kw || name)).then(j => { const a = j && j.artists && j.artists.find(x => sim(g.kw || name, x.strArtist) >= .6); return a ? [a.strArtistThumb, a.strArtistFanart, a.strArtistFanart2, a.strArtistFanart3, a.strArtistFanart4, a.strArtistBanner].filter(Boolean).map(u => ({ u, t: u, s: 'TheAudioDB' })) : []; })));
   }
-  (await Promise.all(jobs.map(j => j.catch(() => [])))).forEach(l => lists.push(l));
+  await Promise.all(jobs);
+  const order = ['iTunes', 'Cover Art Archive', 'Deezer', 'TheAudioDB', 'Wikimedia Commons'];
+  lists.sort((a, b) => order.indexOf(a[0].s === 'Wikimedia' ? 'Wikimedia Commons' : a[0].s) - order.indexOf(b[0].s === 'Wikimedia' ? 'Wikimedia Commons' : b[0].s));
   const out = [], seen = new Set(); for (let r = 0; out.length < 9 && r < 9; r++) lists.forEach(l => { const x = l[r]; if (x && x.u && !seen.has(x.u) && out.length < 9) { seen.add(x.u); out.push(x); } });
+  report.sort((a, b) => order.indexOf(a.s) - order.indexOf(b.s)); out.report = report; out.q = base;
+  if (out.length) { PKC[ck] = { at: Date.now(), list: out.slice(), report }; pkSave(); }
   return out;
 };
 /* a short factual summary, used only when no source has a written introduction. Built from open data; nothing is invented. */
