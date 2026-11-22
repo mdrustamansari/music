@@ -360,3 +360,7 @@ Real recordings, levelled to one loudness, faded in and out, drifting slowly, ne
 - 0.45 nord5: a review list shows what is missing (name, kind, song count) with one quiet Choose action per row; tile grid never compresses (flex none).
 - 0.46 nord5: motion is shown, not described: a dot per sound for pan, a bar for drifting level, a health dot; updated 2.5 times a second only while visible.
 - 0.47 nord5: themes are the only appearance system; left-out items look struck through and dim, not removed, so they can be switched back.
+- 0.48 nord5: with no cover the accent is fixed sapphire blue; warm-at-night shifts hue at most 18 degrees.
+- 0.49 nord5: cost of a look matters: effects are baked small, not blurred large every frame.
+- 0.50 nord5: one sheet for adding, saying what is already there; row action is a quiet three-dot control, 40 px target; menus are plain lists with hairlines; every destructive step has Undo.
+- 0.51 nord5: glass follows physics: clear body, bright horizontal edges only, vertical edges invisible; in light mode the body is slightly darker than the background so the edges can shine. Facts the listener always needs (format, quality, favourite, place, rating) sit freely on the screen, never in a card.

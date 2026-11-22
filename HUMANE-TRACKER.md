@@ -146,3 +146,7 @@ ReplayGain, waveform scrubber, mood groups, swipe for volume, double-tap bookmar
 - 0.45 nord5: Google and Openverse removed; pictures still missing list; paged iTunes, Deezer and Cover Art Archive.
 - 0.46 nord5: sounds pan left and right by themselves; Right now card shows pan, drift and sound health.
 - 0.47 nord5: Winamp and skin system removed; sound seams hidden; leave out single cut sounds.
+- 0.48 nord5: theme and Gold accent fixed; default accent sapphire blue; night warmth no longer turns blue pink.
+- 0.49 nord5: echoes blurred inside small canvases, Playing screen smoother; large library (20,000 songs) checked.
+- 0.50 nord5: Add to queue/playlist everywhere; playlist editing, sorting, import and export; queue selection, sort, shuffle, earlier queues; wrapped quick question.
+- 0.51 nord5: one permanent song strip without a card; slim banner for other info; five glass edges; clear light-mode glass with live preview in Settings.

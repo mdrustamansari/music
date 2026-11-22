@@ -31,11 +31,14 @@ function updateReps(vis, dt, now, beat) {
       r.st = 1 + (.22 + i * .22 + Math.random() * .25) * big; r.at = rnd() * V.ea * 38; r.xt = rnd() * V.ea * .16; r.yt = rnd() * V.ea * .12; r.t0 = now;
     } else if (now - (r.t0 || 0) > 900) { r.st += (1.12 + i * .1 - r.st) * (1 - Math.exp(-dt * 1.2)); r.at *= Math.exp(-dt * .9); r.xt *= Math.exp(-dt * .9); r.yt *= Math.exp(-dt * .9); }
     spr(r, 's', 0, dt, 9 + i, .55); spr(r, 'a', 0, dt, 8, .6); spr(r, 'x', 0, dt, 8, .65); spr(r, 'y', 0, dt, 8, .65);
-    if ((r.n++ & 1) === 0) { r.c.clearRect(0, 0, 256, 96); r.c.drawImage(cvs, 0, 0, 256, 96); }
+    if ((r.n++ & 1) === 0) { r.c.clearRect(0, 0, 256, 96); if (CF) { if (!(r.n & 15) || !r.fl) r.fl = 'blur(' + (V.blurPx() / (r.el.offsetWidth / 256 || 2.2)).toFixed(1) + 'px)'; r.c.filter = r.fl; } r.c.drawImage(cvs, 0, 0, 256, 96); }
     r.el.style.transform = `translate(${(r.x * 100).toFixed(2)}%,${(r.y * 100).toFixed(2)}%) rotate(${r.a.toFixed(2)}deg) scale(${r.s.toFixed(3)})`;
     r.el.style.opacity = (V.eo * (.9 - i * .17)).toFixed(3);
   });
 }
+/* the soft echo is blurred once, small, inside the little canvas (cheap), instead of blurring a big moving layer every frame */
+const CF = (() => { try { const c = document.createElement('canvas').getContext('2d'); return 'filter' in c; } catch (e) { return false; } })();
+if (CF) document.documentElement.classList.add('cvf');
 V.blurPx = () => (6 + V.eb * 20);
 V.size = () => {
   const dpr = Math.min(2, window.devicePixelRatio || 1);

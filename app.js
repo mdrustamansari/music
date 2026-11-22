@@ -14,7 +14,7 @@ const store = window.MPS ? { get: MPS.get, set: MPS.set } : {
 const M = window.Motion, C = window.Companion, ROOT = document.documentElement;
 let S = Object.assign({ night: true, nightT: 23, nightV: 7, nightR: 5, look: 'auto', on: [], off: [], infinity: true, gap: true, acc: 'sapphire', cl: true, cmin: 30, fade: true, haptic: true, hero: 'album', acol: true, calm: false, comp: true, listen: true, warm: true, live: 2, viz: 'tide', ins: true, insf: 6, lysz: 17, st: true, sta: 50, sts: 50, stg: 50, stt: 50, stb: 60, stp: 50, sm: true, pwr: true, lv: 'auto', cover: true, djmin: 20, djmax: 70, djspeech: false, lmus: 100, lfx: 100, lkeep: true, djxf: 6, djfav: true, lslow: 14, lrev: 45, lech: 30, lwarm: 50, lvol: 70, eql: 0, eqm: 0, eqh: 0, vol: 100, norm: true, insst: 'tip', vfav: {}, lastbk: 0, insop: 100, insol: 100, xf: true, xfl: 3, mxo_soft: true, mxv_soft: 55, mxo_heavy: false, mxv_heavy: 40, mxo_thunder: true, mxv_thunder: 45, mxo_crickets: false, mxv_crickets: 35, mxo_birds: false, mxv_birds: 35, adn: true, admin: 35, admax: 100, adp: 'slow', lsleep: 0, vizc: 'accent', rip: 3, ripc: 'accent', net: false, ev: 2, eo: 40, es: 50, ea: 50, sn: 50, eb: 50, src: 'bolly', sx: { itunes: true, deezer: true, mb: true, wiki: true, adb: true }, fresh: true,  suggest: true, rem: false, speed: 1, tapHold: false, opt: true }, store.get('mp_set', {}));
 if (S.lrn === undefined) S.lrn = true; if (S.lsv === undefined) S.lsv = true; if (window.Taste) Taste.cfg(S.lrn, S.lsv);
-if (S.fresh === undefined) S.fresh = true; if (S.insf === undefined) S.insf = S.ins === false ? 0 : 6; S.sx = Object.assign({ adb: true }, S.sx);
+if (S.fresh === undefined) S.fresh = true; if (!'ABCDE'.includes(S.gedge || 'x')) S.gedge = 'A'; if (!S.glook) S.glook = 'clear'; if (S.gdep === undefined) S.gdep = 40; if (S.gtn === undefined) S.gtn = 30; if (S.insf === undefined) S.insf = S.ins === false ? 0 : 6; S.sx = Object.assign({ adb: true }, S.sx);
 { const raw = store.get('mp_set', {}); if (raw.viz === undefined && raw.hero === 'blob') S.viz = 'blob'; if (raw.viz === undefined && raw.hero === 'album') S.viz = 'none'; }
 if (!['none', 'tide', 'bars', 'wave', 'lights', 'disc'].includes(S.viz)) S.viz = 'tide';
 let favs = new Set(store.get('mp_favs', [])), marks = store.get('mp_marks', []), tried = store.get('mp_tried', {}), snooze = store.get('mp_snooze', 0);
@@ -147,7 +147,8 @@ function applyColours() {
   ['--amb1', '--amb2', '--acc1', '--acc2', '--cs2'].forEach(p => ROOT.style.removeProperty(p));
   col.tone = '';
   if (S.acol && !ROOT.dataset.th && ROOT.dataset.acc !== 'gold') {
-    const h1 = warm ? hueMix(col.h1, 28, .55) : col.h1, h2 = warm ? hueMix(col.h2, 18, .55) : col.h2;
+    const wm = (h, t) => { let d = ((t - h + 540) % 360) - 180; d = Math.max(-18, Math.min(18, d * .55)); return (h + d + 360) % 360; };   /* night warmth nudges a hue by at most 18 degrees, so blue stays blue */
+    const h1 = warm ? wm(col.h1, 28) : col.h1, h2 = warm ? wm(col.h2, 18) : col.h2;
     const L1 = dark ? 34 : 76, L2 = dark ? 30 : 80;
     ROOT.style.setProperty('--amb1', `hsl(${h1.toFixed(0)} ${col.s1}% ${L1}%)`);
     ROOT.style.setProperty('--amb2', `hsl(${h2.toFixed(0)} ${col.s2}% ${L2}%)`);
@@ -177,9 +178,9 @@ function updateTone() {
   $('#app').classList.toggle('pl', tab === 'play');
 }
 function ambient(url, seed) {
+  if (!url) { setCol(215, 70, 25, 70); return; }   /* no cover: the calm sapphire blue, not a colour picked from a song name */
   const h = hueOf(seed);
   setCol(h, 78, (h + 70) % 360, 78);
-  if (!url) return;
   const im = new Image();
   im.onload = () => {
     try {
@@ -291,7 +292,7 @@ function infinity() {
   })).sort((x, y) => y.v - x.v).slice(0, 10).map(x => x.s.id);
   if (cands.length) { A.append(JSON.stringify(cands)); }
 }
-function startList(list, i) { aloneId = null; if (window.Taste) Taste.manual(); A.setQueue(JSON.stringify(list.map(s => s.id)), i, 0, true); tick(); setTab('play'); }
+function startList(list, i) { qSnap(); aloneId = null; if (window.Taste) Taste.manual(); A.setQueue(JSON.stringify(list.map(s => s.id)), i, 0, true); tick(); setTab('play'); }
 function choose(list, i, label) {
   const one = i !== null && i !== undefined;
   const ids = one ? [list[i].id] : list.map(s => s.id);
@@ -369,7 +370,7 @@ function tidyOpen() {
     toastUndo(ns(plan.n) + ' removed', () => { infHold = null; A.reorder(JSON.stringify(prevIds), prevIdx); });
   });
 }
-$('#qtidy').addEventListener('click', tidyOpen);
+$('#qmore').addEventListener('click', qMenu);
 
 /* ---------- views ---------- */
 let tab = 'play', stack = [];
@@ -397,7 +398,7 @@ function morphToPlay() {
 }
 
 const PLAYSVG = '<svg viewBox="0 0 24 24" width="26" height="26" fill="#fff"><polygon points="8.5,5 19,12 8.5,19"/></svg>';
-function rowHTML(s, i, extra = '') { return `<button class="row${extra}" data-i="${i}" data-id="${s.id}" type="button">${thHTML(s)}<div class="tx"><div class="rt1">${esc(s.t)}</div><div class="rt2">${esc(sub(s))} · ${fmt(s.d)}</div></div></button>`; }
+function rowHTML(s, i, extra = '') { return `<button class="row${extra}" data-i="${i}" data-id="${s.id}" type="button">${thHTML(s)}<div class="tx"><div class="rt1">${esc(s.t)}</div><div class="rt2">${esc(sub(s))} · ${fmt(s.d)}</div></div><span class="more" role="button" tabindex="0" data-more="${s.id}" aria-label="Add to the queue or a playlist"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18.5" cy="12" r="1.5"/></svg></span></button>`; }
 let addState = 0;
 const ADDSVG = () => `<svg class="addic" data-s="${addState}" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><g class="a"><path d="M12 5v14M5 12h14"/></g><g class="b"><circle cx="12" cy="12" r="8" stroke-dasharray="14 40"/></g><g class="c"><path d="M6 12.5l4 4 8-9" stroke-linejoin="round"/></g></svg>`;
 function ageLabel(d) { return d < 1 ? 'new' : d < 14 ? Math.round(d) + ' d' : d < 60 ? Math.round(d / 7) + ' wk' : Math.round(d / 30) + ' mo'; }
@@ -890,7 +891,7 @@ function marksPage() {
   $('#libbox').dataset.pg = 'marks';
 }
 function listPage(title, list, sub2, keep, folder) {
-  page(title, `<div class="sub">${sub2 || ns(list.length) + ' · ' + totalLen(list)}</div><div class="centre">${keep ? '' : SORTS.map(x => `<button class="lnk sm" data-sort="${x[0]}" type="button">${x[1]}</button>`).join('')}${folder ? '<button class="lnk sm" data-act="findfolder" type="button">Find details</button>' : ''}</div>${list.length > 1 ? `<div class="centre" style="margin:12px 0"><button class="pillbtn" data-act="playall" type="button">Play all</button></div>` : ''}<div class="list g" id="plist2">${list.slice(0, 400).map((s, i) => rowHTML(s, i)).join('')}</div>${list.length > 400 ? `<div class="centre"><button class="lnk" data-act="more400" type="button">Show more…</button></div>` : ''}`, box => {
+  page(title, `<div class="sub">${sub2 || ns(list.length) + ' · ' + totalLen(list)}</div><div class="centre">${keep ? '' : SORTS.map(x => `<button class="lnk sm" data-sort="${x[0]}" type="button">${x[1]}</button>`).join('')}${folder ? '<button class="lnk sm" data-act="findfolder" type="button">Find details</button>' : ''}</div>${list.length > 1 ? `<div class="centre" style="margin:12px 0"><button class="pillbtn" data-act="playall" type="button">Play all</button><button class="pillbtn ghost" data-adda="${esc(title)}" type="button" style="margin-left:8px">Add to…</button></div>` : ''}<div class="list g" id="plist2">${list.slice(0, 400).map((s, i) => rowHTML(s, i)).join('')}</div>${list.length > 400 ? `<div class="centre"><button class="lnk" data-act="more400" type="button">Show more…</button></div>` : ''}`, box => {
     box._list = list; box._shown = 400;
   });
 }
@@ -954,7 +955,9 @@ const sameCombo = (c, o) => VK.every(k => (o || S)[k] === c[k]);
 const heartIc = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/></svg>';
 const link = (key, v, l) => `<button class="lnk${S[key] === v ? ' on' : ''}" data-set="${key}" data-v="${v}" type="button">${l}</button>`;
 const folderList = () => [...folders.keys()].sort();
+const EDGES = [['A', 'Cut'], ['B', 'Rim'], ['C', 'Prism'], ['D', 'Frost'], ['E', 'Satin']];
 const SECT = {
+  glass: () => `<h2>Glass</h2><div class="gprev" aria-hidden="true"><div class="g"><b>Kesariya (Dance Mix)</b><small>Pritam, Arijit Singh</small></div></div><div class="list g" style="margin-top:12px"><div class="setrow"><div style="min-width:0"><div class="s1">Edge</div><div class="s2">How light catches the top and bottom edges of every glass card. Cut: bright and fading. Rim: crisp. Prism: a touch of colour. Frost: one soft line. Satin: Frost with a gentle sheen.</div><div class="links" data-grp="gedge" style="margin-top:10px;flex-wrap:wrap">${EDGES.map(e => link('gedge', e[0], e[1])).join('')}</div></div></div><div class="setrow"><div style="min-width:0"><div class="s1">Light glass</div><div class="s2">For Light mode only; Dark keeps its own glass. Clear lets the screen show through, a little darker so the edges shine.</div><div class="links" data-grp="glook" style="margin-top:10px">${link('glook', 'clear', 'Clear')}${link('glook', 'accent', 'Accent')}${link('glook', 'smoke', 'Smoke')}</div></div></div><div class="setrow rng"><div><div class="s1">Glass depth</div><input type="range" min="0" max="100" step="5" value="${S.gdep}" data-rng="gdep" aria-label="Glass depth in light mode"></div></div><div class="setrow rng"><div><div class="s1">Accent tint</div><div class="s2">Used by Accent.</div><input type="range" min="0" max="100" step="5" value="${S.gtn}" data-rng="gtn" aria-label="Accent tint amount"></div></div></div>`,
   screen: () => `<h2>Playing screen</h2>
     <div class="list g" style="margin-top:12px">${toggleRow('acol', 'Colours from the album', 'Tints the screen with the cover’s colours.')}${toggleRow('calm', 'Calm minimal', 'Hides the busy parts and keeps the screen quiet.')}${toggleRow('sm', 'Small album art', 'Shows the cover at 125 px when there are no lyrics. Turn off for the large cover.')}${toggleRow('comp', 'Companion', 'A small face that reacts to the music.')}${toggleRow('listen', 'Visuals move with the music', 'Needs the music to pass through the app. Turn off if playback stops with the screen off.')}</div>`,
   quiet: () => `<div class="list g" style="margin-top:12px">${toggleRow('cover', 'Show the album art', 'Turn off to keep only the visualiser and its echoes.')}<div class="setrow rng"><div><div class="s1">Info card when quiet</div><div class="s2">How often the song’s details appear on the quiet screen. At Never the card stays hidden and the lyrics show instead, when the song has them.</div><input type="range" min="0" max="6" step="1" value="${S.insf}" data-rng="insf" aria-label="How often the info card appears"></div></div><div class="setrow rng"><div><div class="s1">Lyrics text size</div><div class="s2">The size of the lyrics on the quiet screen.</div><input type="range" min="14" max="28" step="1" value="${S.lysz || 17}" data-rng="lysz" aria-label="Lyrics text size"></div></div><div class="setrow"><div class="s1">Card style</div><div class="links" data-grp="insst">${link('insst', 'tip', 'Tooltip')}${link('insst', 'glass', 'Glass')}</div></div><div class="setrow rng"><div><div class="s1">Card background</div><input type="range" min="0" max="100" step="5" value="${S.insop}" data-rng="insop" aria-label="Tooltip background opacity"></div></div><div class="setrow rng"><div><div class="s1">Hairline border</div><input type="range" min="0" max="100" step="5" value="${S.insol}" data-rng="insol" aria-label="Outline opacity"></div></div></div>`,
@@ -975,7 +978,7 @@ const SECT = {
 };
 const echoCtl = () => { const n = vfavList().length, on = vfavList().some(c => sameCombo(c)); return `<div class="list g"><div class="setrow"><div><div class="s1">Surprise me</div><div class="s2">Picks a fresh mix of everything below. Tap the heart to keep a look you like.</div></div><div class="rfx"><button class="rbtn g" data-rnd="1" type="button">Randomize</button><button class="fav${on ? ' on' : ''}" data-favv="1" type="button" aria-pressed="${on}" aria-label="Like this look">${heartIc}</button></div></div><div class="setrow"><div class="s2" id="favn">${n ? n + (n === 1 ? ' look' : ' looks') + ' liked for ' + VN[S.viz] : 'No looks liked yet for ' + VN[S.viz]}. Tapping the visualiser on the Playing screen uses your liked looks, or a fresh good one if you have none yet.</div></div></div>`; };
 const PG = {
-  look: ['Appearance', '', () => nh(SECT.look()) + SECT.live()],
+  look: ['Appearance', '', () => nh(SECT.look()) + SECT.glass() + SECT.live()],
   screen: ['Playing screen', '', () => nh(SECT.screen())],
   quiet: ['Quiet screen', '', () => SECT.quiet()],
   viz: ['Visualiser', '', () => nh(SECT.viz()) + `<div class="list g" style="margin-top:12px"><button class="hrow plain" data-pg="echo" type="button"><i class="hi" style="--c:#e8738a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">${hico.echo}</svg></i><span class="ht">Echoes and sensitivity</span><span class="hv">${S.ev ? S.ev + (S.ev === 1 ? ' echo' : ' echoes') : 'Off'}</span><svg class="hc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></button><button class="hrow plain" data-pg="stars" type="button"><i class="hi" style="--c:#f2b84b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg></i><span class="ht">Stars</span><span class="hv">${S.st ? 'On' : 'Off'}</span><svg class="hc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg></button></div>` + SECT.ripple()],
@@ -1333,12 +1336,12 @@ const EQ = '<svg class="eq" viewBox="0 0 24 24" fill="var(--acc2)" aria-hidden="
 let qShown = 120;
 function renderQueue() {
   const from = Math.max(0, st.index - 3), items = qIds.slice(from, from + qShown);
-  $('#qlab').textContent = 'Up next · ' + ns(Math.max(0, qIds.length - st.index - 1));
-  $('#qlist').innerHTML = items.map((id, k) => { const s = byId.get(id), i = from + k, c = i === st.index, sl = i > st.index && slip.has(id); return s ? `<div class="row${c ? ' cur' : ''}${sl ? ' slip' : ''}" data-q="${i}" role="button" tabindex="0"><i class="edge"></i>${thHTML(s)}<div class="tx"><div class="rt1">${esc(s.t)}</div><div class="rt2">${esc(sub(s))}</div></div>${c ? EQ : NT}<span class="gr" data-gr="${i}" aria-label="Drag to move ${esc(s.t)}" role="button" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h14M5 15h14"/></svg></span><button class="x" data-rm="${i}" type="button" aria-label="Remove ${esc(s.t)} from queue"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>` : ''; }).join('') + (from + qShown < qIds.length ? `<div class="centre"><button class="lnk" data-act="moreq" type="button">Show more…</button></div>` : '');
-  thumbs($('#qlist'));
+  $('#qlab').textContent = qSel ? (qSel.size ? qSel.size + ' selected' : 'Select songs') : 'Up next · ' + ns(Math.max(0, qIds.length - st.index - 1)); $('#qsheet').classList.toggle('sel', !!qSel);
+  $('#qlist').innerHTML = items.map((id, k) => { const s = byId.get(id), i = from + k, c = i === st.index, sl = i > st.index && slip.has(id); return s ? `<div class="row${c ? ' cur' : ''}${sl ? ' slip' : ''}${qSel && qSel.has(i) ? ' picked' : ''}" data-q="${i}" role="button" tabindex="0"><i class="edge"></i>${qSel ? `<i class="ck${qSel.has(i) ? ' on' : ''}" aria-hidden="true"></i>` : ''}${thHTML(s)}<div class="tx"><div class="rt1">${esc(s.t)}</div><div class="rt2">${esc(sub(s))}</div></div>${qSel ? '' : c ? EQ : NT}<span class="gr" data-gr="${i}" aria-label="Drag to move ${esc(s.t)}" role="button" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h14M5 15h14"/></svg></span><button class="x" data-rm="${i}" type="button" aria-label="Remove ${esc(s.t)} from queue"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>` : ''; }).join('') + (from + qShown < qIds.length ? `<div class="centre"><button class="lnk" data-act="moreq" type="button">Show more…</button></div>` : '');
+  thumbs($('#qlist')); qSelBar();
 }
-function openQueue() { $('#qsheet').classList.add('open'); renderQueue(); }
-function closeQueue() { $('#qsheet').classList.remove('open'); }
+function openQueue() { $('#qsheet').classList.add('open'); renderQueue(); if (!S.tipAdd) { S.tipAdd = 1; saveS(); setTimeout(() => toast('Hold any song to add it to a playlist'), 700); } }
+function closeQueue() { $('#qsheet').classList.remove('open'); if (qSel) { qSel = null; setTimeout(renderQueue, 400); } }
 
 /* popup + toast */
 let popH = null;
@@ -1485,15 +1488,186 @@ $('#sleepchip').addEventListener('click', listening);
   L.addEventListener('pointerup', done); L.addEventListener('pointercancel', done);
   const closeM = () => { L.querySelectorAll('.qm').forEach(m => m.remove()); };
   longPress(L, e => { const r = e.target.closest('.row[data-q]'); return r && !e.target.closest('[data-gr],[data-rm]') ? r.dataset.q : null; }, i => {
-    lpAt = Date.now(); closeM(); const row = L.querySelector(`.row[data-q="${i}"]`); if (!row) return; const m = document.createElement('div'); m.className = 'qm'; m.innerHTML = `<button type="button" data-qa="next" data-i="${i}">Play next</button><button type="button" data-qa="end" data-i="${i}">Move to end</button>`; row.after(m); void m.offsetWidth; m.classList.add('on');
+    lpAt = Date.now(); closeM(); const row = L.querySelector(`.row[data-q="${i}"]`); if (!row) return; const m = document.createElement('div'); m.className = 'qm'; m.innerHTML = `<button type="button" data-qa="next" data-i="${i}">Play next</button><button type="button" data-qa="end" data-i="${i}">Move to end</button><button type="button" data-qa="pl" data-i="${i}">Add to…</button>`; row.after(m); void m.offsetWidth; m.classList.add('on');
   });
-  L.addEventListener('click', e => { if (e.target.closest('[data-gr]') || Date.now() - dragEnd < 500) { e.stopPropagation(); e.preventDefault(); return; } if (Date.now() - lpAt < 700) return; const b = e.target.closest('[data-qa]'); if (b) { e.stopPropagation(); const i = +b.dataset.i; tick(); if (b.dataset.qa === 'next') A.move(i, i < st.index ? st.index : st.index + 1); else A.move(i, qIds.length - 1); toast(b.dataset.qa === 'next' ? 'Plays next' : 'Moved to the end'); closeM(); } else if (!e.target.closest('.qm')) closeM(); }, true);
+  L.addEventListener('click', e => { if (e.target.closest('[data-gr]') || Date.now() - dragEnd < 500) { e.stopPropagation(); e.preventDefault(); return; } if (Date.now() - lpAt < 700) return; const b = e.target.closest('[data-qa]'); if (b) { e.stopPropagation(); const i = +b.dataset.i; tick(); if (b.dataset.qa === 'pl') { closeM(); addSheet([qIds[i]]); return; } if (b.dataset.qa === 'next') A.move(i, i < st.index ? st.index : st.index + 1); else A.move(i, qIds.length - 1); toast(b.dataset.qa === 'next' ? 'Plays next' : 'Moved to the end'); closeM(); } else if (!e.target.closest('.qm')) closeM(); }, true);
 })();
 $('#qlist').addEventListener('click', e => {
   const rm = e.target.closest('[data-rm]'); if (rm) { tick(); A.removeAt(+rm.dataset.rm); return; }
-  const q = e.target.closest('[data-q]'); if (q) { tick(); A.jump(+q.dataset.q); closeQueue(); return; }
+  const q = e.target.closest('[data-q]'); if (q && qSel) { tick(); const i = +q.dataset.q; qSel.has(i) ? qSel.delete(i) : qSel.add(i); renderQueue(); return; }
+  if (q) { tick(); A.jump(+q.dataset.q); closeQueue(); return; }
   if (e.target.closest('[data-act="moreq"]')) { qShown += 200; renderQueue(); }
 });
+
+/* ---------- add to the queue or a playlist, from anywhere; queue and playlist tools ---------- */
+const qHist = store.get('mp_qhist', []);
+function qSnap() { if (qIds.length > 1) { const k = qIds.join(','); if (qHist[0] && qHist[0].ids.join(',') === k) return; qHist.unshift({ ids: qIds.slice(), i: st.index, at: Date.now() }); qHist.length = Math.min(qHist.length, 8); store.set('mp_qhist', qHist); } }
+const ulSorted = () => userLists.slice().sort((x, y) => (y.pin ? 1 : 0) - (x.pin ? 1 : 0) || (y.at || 0) - (x.at || 0));
+const ulUnique = base => { let nm = (base || 'New playlist').trim().slice(0, 40) || 'New playlist', k = 2; const b = nm; while (userLists.some(l => l.name.toLowerCase() === nm.toLowerCase())) nm = b.slice(0, 36) + ' ' + k++; return nm; };
+function ulAdd(l, ids) { const have = new Set(l.ids), add = ids.filter((id, k) => !have.has(id) && ids.indexOf(id) === k); l.ids.push(...add); l.at = Date.now(); saveULists(); return { add, dup: ids.length - add.length }; }
+const ulRefresh = () => { if (tab === 'lib' && $('#libbox') && !$('#libbox').dataset.pg && libSeg === 'lists') renderLib(); };
+const ICL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 7h11M4 12h11M4 17h6M18 12v7M14.5 15.5h7"/></svg>';
+function addSheet(ids, title) {
+  ids = ids.filter((id, k) => byId.has(id) && ids.indexOf(id) === k); if (!ids.length) return;
+  const one = ids.length === 1, s = one ? byId.get(ids[0]) : null, up = new Set(qIds.slice(st.index + 1)), inQ = ids.filter(id => up.has(id)).length, L = ids.map(i => byId.get(i));
+  const row = l => { const n = ids.filter(id => l.ids.includes(id)).length; return `<button class="adr" data-pl="${l.id}" type="button"><span class="adt">${ICL}</span><span class="adn">${l.pin ? '★ ' : ''}${esc(l.name)}</span><span class="adc">${n === ids.length ? 'Already here' : n ? n + ' already here' : ns(l.ids.length)}</span></button>`; };
+  popup(`<h3>${esc(title || (one ? s.t : ns(ids.length)))}</h3><div class="sub">${one ? esc(sub(s)) : totalLen(L)}${inQ ? ' · ' + (one ? 'already in your queue' : inQ + ' already in your queue') : ''}</div>
+    <div class="adq"><button class="pillbtn sm" data-do="next" type="button">Play next</button><button class="pillbtn sm ghost" data-do="end" type="button">Add to queue</button></div>
+    <div class="adl"><button class="adr" data-do="new" type="button"><span class="adt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span><span class="adn">New playlist…</span></button>${ulSorted().map(row).join('')}</div>
+    <div class="acts"><button class="lnk" data-do="x" type="button">Close</button></div>`, e => {
+    const b = e.target.closest('[data-do],[data-pl]'); if (!b) return; tick();
+    if (b.dataset.pl) { const l = userLists.find(x => x.id === b.dataset.pl); closePop(); if (!l) return; const r = ulAdd(l, ids); if (!r.add.length) { toast('Already in “' + l.name + '”'); return; } toastUndo('Added to “' + l.name + '”' + (r.dup ? ' · ' + r.dup + ' already there' : ''), () => { l.ids = l.ids.filter(id => !r.add.includes(id)); saveULists(); ulRefresh(); }); ulRefresh(); return; }
+    const d = b.dataset.do; closePop(); if (d === 'x') return; const j = JSON.stringify(ids);
+    if (d === 'next') { A.insertNext(j); ids.forEach(id => slip.add(id)); toast('Plays next'); }
+    if (d === 'end') { A.append(j); toast(one ? 'Added to the queue' : ns(ids.length) + ' added to the queue'); }
+    if (d === 'new') newListPop(ids);
+  });
+}
+function newListPop(ids) {
+  popup(`<h3>New playlist</h3><div class="sub">${ids && ids.length ? ns(ids.length) + ' will be added.' : 'Start empty. Add songs from anywhere.'}</div><input class="inp" id="plname" value="" placeholder="Name" aria-label="Playlist name" maxlength="40" style="margin:12px 0" autocomplete="off"><button class="pillbtn" data-do="go" type="button">Create</button><div class="acts"><button class="lnk" data-do="no" type="button">Cancel</button></div>`, e => {
+    const k = e.target.dataset.do; if (!k) return; const v = ($('#plname') || {}).value || ''; closePop(); if (k !== 'go') return;
+    const l = { id: 'u' + Date.now(), name: ulUnique(v), ids: (ids || []).filter((x, i, r) => r.indexOf(x) === i), at: Date.now() }; userLists.unshift(l); saveULists(); tick(); toast('Created “' + l.name + '”' + (l.ids.length ? ' · ' + ns(l.ids.length) : '')); ulRefresh();
+  }); setTimeout(() => { const i = $('#plname'); i && i.focus(); }, 250);
+}
+const ulRows = (l, edit) => { const rows = []; l.ids.forEach((id, k) => { const s = byId.get(id); if (!s) return; rows.push(edit
+  ? `<div class="row ed" data-k="${k}">${thHTML(s)}<div class="tx"><div class="rt1">${esc(s.t)}</div><div class="rt2">${esc(sub(s))}</div></div><span class="mv"><button type="button" data-ulm="up" data-k="${k}" aria-label="Move up"${k === 0 ? ' disabled' : ''}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 14l5-5 5 5"/></svg></button><button type="button" data-ulm="dn" data-k="${k}" aria-label="Move down"${k === l.ids.length - 1 ? ' disabled' : ''}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg></button><button type="button" data-ulm="rm" data-k="${k}" aria-label="Remove from playlist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></span></div>`
+  : rowHTML(s, rows.length)); }); return rows.join(''); };
+function ulPage(l, edit) {
+  const L = ulSongs(l), miss = l.ids.length - L.length;
+  page(l.name, `<div class="sub" id="ulsub"></div><div id="ulmiss"></div><div class="centre" style="margin:12px 0" id="ulgo"></div><div class="ulbar" id="ulbar"></div><div class="list g" id="plist2"></div><div id="ulempty"></div>`, box => { box._ul = l; ulPaint(l, !!edit); });
+}
+function ulPaint(l, edit) {
+  const box = $('#libbox'); if (!box || !$('#plist2')) return; const L = ulSongs(l), miss = l.ids.length - L.length; box._list = L; box._shown = 400; box._ul = l; box._ed = edit;
+  $('#ulsub').textContent = ns(L.length) + (L.length ? ' · ' + totalLen(L) : '') + (l.pin ? ' · Pinned' : '');
+  $('#ulmiss').innerHTML = miss ? `<div class="tipbox bkn" style="margin:8px 0"><div class="s2">${miss === 1 ? '1 song is' : miss + ' songs are'} no longer in your library.</div><button class="lnk sm" data-ulact="miss" type="button">Remove ${miss === 1 ? 'it' : 'them'}</button></div>` : '';
+  $('#ulgo').innerHTML = L.length > 1 && !edit ? '<button class="pillbtn" data-act="playall" type="button" style="margin-right:8px">Play all</button><button class="pillbtn ghost" data-ulact="shuf" type="button">Shuffle</button>' : '';
+  $('#ulbar').innerHTML = `<button class="lnk sm" data-ulact="rename" type="button">Rename</button>${L.length > 1 ? '<button class="lnk sm" data-ulact="sort" type="button">Sort</button>' : ''}${L.length ? `<button class="lnk sm" data-ulact="edit" type="button">${edit ? 'Done' : 'Edit'}</button>` : ''}<button class="lnk sm" data-ulact="more" type="button">More</button>`;
+  $('#plist2').classList.toggle('uled', edit); $('#plist2').innerHTML = ulRows(l, edit);
+  $('#ulempty').innerHTML = L.length ? '' : '<div class="empty" style="margin-top:18px">Nothing here yet. Hold any song, or tap its ⋯, to add it.</div>';
+  thumbs($('#plist2'));
+}
+const SORTL = { az: ['Title, A to Z', (x, y) => x.t.localeCompare(y.t)], artist: ['Artist', (x, y) => (x.a || '').localeCompare(y.a || '') || (x.al || '').localeCompare(y.al || '')], album: ['Album', (x, y) => (x.al || '').localeCompare(y.al || '')], long: ['Longest first', (x, y) => y.d - x.d], short: ['Shortest first', (x, y) => x.d - y.d], new: ['Newest added', (x, y) => (y.ad || 0) - (x.ad || 0)], old: ['Oldest added', (x, y) => (x.ad || 0) - (y.ad || 0)] };
+function ulMenu(l) {
+  popup(`<h3>${esc(l.name)}</h3><div class="mnl">
+    <button type="button" data-m="pin">${l.pin ? 'Unpin from the top' : 'Pin to the top'}</button>
+    <button type="button" data-m="dup">Make a copy</button>
+    <button type="button" data-m="all">Add all to another playlist…</button>
+    <button type="button" data-m="queue">Add all to the queue</button>
+    <button type="button" data-m="exp">Share as a file (.m3u)</button>
+    <button type="button" data-m="del" class="red">Delete playlist</button></div><div class="acts"><button class="lnk" data-m="x" type="button">Close</button></div>`, e => {
+    const m = (e.target.closest('[data-m]') || {}).dataset; if (!m) return; m.m !== 'x' && tick(); closePop(); const k = m.m, L = ulSongs(l);
+    if (k === 'pin') { l.pin = !l.pin; saveULists(); ulPaint(l, false); toast(l.pin ? 'Pinned' : 'Unpinned'); }
+    if (k === 'dup') { const c = { id: 'u' + Date.now(), name: ulUnique(l.name + ' copy'), ids: l.ids.slice(), at: Date.now() }; userLists.unshift(c); saveULists(); toast('Copied as “' + c.name + '”'); }
+    if (k === 'all') addSheet(L.map(s => s.id), 'Add “' + l.name + '”');
+    if (k === 'queue') { A.append(JSON.stringify(L.map(s => s.id))); toast(ns(L.length) + ' added to the queue'); }
+    if (k === 'exp') m3uOut(l);
+    if (k === 'del') { const keep = JSON.stringify(l); userLists = userLists.filter(x => x.id !== l.id); saveULists(); stack.length = 0; libSeg = 'lists'; renderLib(); toastUndo('Deleted “' + l.name + '”', () => { userLists.unshift(JSON.parse(keep)); saveULists(); ulRefresh(); }, 'Undo', 9000); }
+  });
+}
+function m3uOut(l) {
+  const txt = '#EXTM3U\n' + ulSongs(l).map(s => `#EXTINF:${Math.round(s.d / 1000)},${s.a ? s.a + ' - ' : ''}${s.t}\n${s.fn || s.t}`).join('\n') + '\n', u = URL.createObjectURL(new Blob([txt], { type: 'audio/x-mpegurl' })), el = document.createElement('a');
+  el.href = u; el.download = l.name.replace(/[\\/:*?"<>|]+/g, ' ').trim() + '.m3u8'; document.body.appendChild(el); el.click(); el.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); toast('Saved as ' + el.download);
+}
+function m3uIn() {
+  const f = document.createElement('input'); f.type = 'file'; f.accept = '.m3u,.m3u8,.txt,audio/x-mpegurl'; f.onchange = async () => {
+    const file = f.files[0]; if (!file) return; const lines = (await file.text()).split(/\r?\n/).map(x => x.trim()).filter(x => x && x[0] !== '#'), key = x => x.split(/[\\/]/).pop().toLowerCase(), by = new Map(); S_all().forEach(s => { by.set((s.fn || '').toLowerCase(), s.id); });
+    const ids = lines.map(x => by.get(key(x))).filter((x, i, r) => x && r.indexOf(x) === i);
+    if (!ids.length) { popup(`<h3>No songs matched</h3><div class="sub">None of the ${lines.length} file names in this playlist are in your library yet. Add the songs first, then import it again.</div><div class="acts"><button class="lnk" data-do="x" type="button">Close</button></div>`, ev => ev.target.dataset.do && closePop()); return; }
+    const l = { id: 'u' + Date.now(), name: ulUnique(file.name.replace(/\.[^.]+$/, '')), ids, at: Date.now() }; userLists.unshift(l); saveULists(); toast('Imported “' + l.name + '”: ' + ids.length + ' of ' + lines.length + ' songs found'); ulRefresh();
+  }; f.click();
+}
+const S_all = () => [...byId.values()];
+function sortPop(l) {
+  popup(`<h3>Sort “${esc(l.name)}”</h3><div class="sub">This changes the order you see and hear.</div><div class="mnl">${Object.keys(SORTL).map(k => `<button type="button" data-m="${k}">${SORTL[k][0]}</button>`).join('')}<button type="button" data-m="rev">Reverse the order</button><button type="button" data-m="shuf">Shuffle the order</button><button type="button" data-m="dups">Remove repeats</button></div><div class="acts"><button class="lnk" data-m="x" type="button">Cancel</button></div>`, e => {
+    const k = ((e.target.closest('[data-m]') || {}).dataset || {}).m; if (!k) return; closePop(); if (k === 'x') return; tick();
+    const old = l.ids.slice(), L = ulSongs(l); let out;
+    if (SORTL[k]) out = L.slice().sort(SORTL[k][1]).map(s => s.id);
+    else if (k === 'rev') out = L.slice().reverse().map(s => s.id);
+    else if (k === 'shuf') { out = L.map(s => s.id); for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; } }
+    else out = L.map(s => s.id).filter((x, i, r) => r.indexOf(x) === i);
+    if (k === 'dups' && out.length === L.length) { toast('No repeats found'); return; }
+    l.ids = out; saveULists(); ulPaint(l, $('#libbox')._ed); toastUndo(k === 'dups' ? ns(L.length - out.length) + ' removed' : 'Sorted', () => { l.ids = old; saveULists(); ulPaint(l, $('#libbox')._ed); });
+  });
+}
+/* the queue: select several, work on what is next, bring back an earlier queue */
+let qSel = null;
+const qUndo = (label, fn) => { const pi = qIds.slice(), px = st.index; fn(); toastUndo(label, () => { A.reorder(JSON.stringify(pi), px); }); };
+function qTail() { return qIds.slice(st.index + 1); }
+function qSetT(tail) { A.reorder(JSON.stringify(qIds.slice(0, st.index + 1).concat(tail)), st.index); }
+function qMenu() {
+  const n = qTail().length;
+  popup(`<h3>Queue</h3><div class="sub">${ns(qIds.length)} · ${n} up next</div><div class="mnl">
+    <button type="button" data-m="sel">Select songs…</button>
+    <button type="button" data-m="all">Add all to a playlist…</button>
+    <button type="button" data-m="sort"${n > 1 ? '' : ' disabled'}>Sort what is next…</button>
+    <button type="button" data-m="shuf"${n > 1 ? '' : ' disabled'}>Shuffle what is next</button>
+    <button type="button" data-m="rev"${n > 1 ? '' : ' disabled'}>Reverse what is next</button>
+    <button type="button" data-m="again"${cur() ? '' : ' disabled'}>Play this song again</button>
+    <button type="button" data-m="tidy">Tidy…</button>
+    ${qHist.length ? '<button type="button" data-m="hist">Earlier queues</button>' : ''}</div><div class="acts"><button class="lnk" data-m="x" type="button">Close</button></div>`, e => {
+    const b = e.target.closest('[data-m]'); if (!b || b.disabled) return; const k = b.dataset.m; closePop(); if (k === 'x') return; tick();
+    if (k === 'sel') { qSel = new Set(); renderQueue(); }
+    if (k === 'all') addSheet(qIds.slice(), 'The whole queue');
+    if (k === 'sort') qSortPop();
+    if (k === 'shuf') qUndo('Shuffled what is next', () => { const t = qTail(); for (let i = t.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [t[i], t[j]] = [t[j], t[i]]; } qSetT(t); });
+    if (k === 'rev') qUndo('Reversed what is next', () => qSetT(qTail().reverse()));
+    if (k === 'again') { A.insertNext(JSON.stringify([curId])); toast('Plays again next'); }
+    if (k === 'tidy') tidyOpen();
+    if (k === 'hist') qHistPop();
+  });
+}
+function qSortPop() {
+  popup(`<h3>Sort what is next</h3><div class="sub">The song playing stays where it is.</div><div class="mnl">${Object.keys(SORTL).map(k => `<button type="button" data-m="${k}">${SORTL[k][0]}</button>`).join('')}</div><div class="acts"><button class="lnk" data-m="x" type="button">Cancel</button></div>`, e => {
+    const k = ((e.target.closest('[data-m]') || {}).dataset || {}).m; if (!k) return; closePop(); if (k === 'x') return; tick();
+    qUndo('Sorted by ' + SORTL[k][0].toLowerCase(), () => qSetT(qTail().map(i => byId.get(i)).filter(Boolean).sort(SORTL[k][1]).map(s => s.id)));
+  });
+}
+function qHistPop() {
+  popup(`<h3>Earlier queues</h3><div class="sub">The last queues you replaced. Tap one to bring it back.</div><div class="mnl">${qHist.map((h, i) => { const s = byId.get(h.ids[Math.min(h.i, h.ids.length - 1)]) || byId.get(h.ids[0]); return `<button type="button" data-m="${i}"><span class="mt">${esc(queueName(h.ids))}</span><span class="ms">${ns(h.ids.filter(x => byId.has(x)).length)} · ${new Date(h.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span></button>`; }).join('')}</div><div class="acts"><button class="lnk" data-m="x" type="button">Close</button></div>`, e => {
+    const k = ((e.target.closest('[data-m]') || {}).dataset || {}).m; if (k === undefined) return; closePop(); if (k === 'x') return; const h = qHist[+k]; if (!h) return; tick(); qSnap();
+    const ids = h.ids.filter(x => byId.has(x)); A.setQueue(JSON.stringify(ids), Math.min(h.i, ids.length - 1), 0, false); toast('Queue brought back');
+  });
+}
+function qSelBar() {
+  let b = $('#qselbar'); if (!qSel) { b && b.remove(); return; }
+  if (!b) { b = document.createElement('div'); b.id = 'qselbar'; $('#qsheet').appendChild(b); }
+  const n = qSel.size; b.innerHTML = `<button type="button" data-qs="next"${n ? '' : ' disabled'}>Next</button><button type="button" data-qs="add"${n ? '' : ' disabled'}>Add to…</button><button type="button" data-qs="rm"${n ? '' : ' disabled'}>Remove</button><button type="button" data-qs="all">${n === qIds.length ? 'None' : 'All'}</button><button type="button" data-qs="done">Done</button>`;
+}
+document.addEventListener('click', e => {
+  const qs = e.target.closest('[data-qs]'); if (qs && qSel) {
+    e.stopPropagation(); e.preventDefault(); if (qs.disabled) return; tick(); const k = qs.dataset.qs, ids = [...qSel].sort((x, y) => x - y).map(i => qIds[i]).filter(Boolean);
+    if (k === 'done') { qSel = null; renderQueue(); return; }
+    if (k === 'all') { qSel = qSel.size === qIds.length ? new Set() : new Set(qIds.map((x, i) => i)); renderQueue(); return; }
+    if (k === 'add') { addSheet(ids, ns(ids.length) + ' selected'); return; }
+    if (k === 'next') { const j = JSON.stringify(ids); A.insertNext(j); ids.forEach(id => slip.add(id)); toast('Plays next'); qSel = null; renderQueue(); return; }
+    if (k === 'rm') { const keep = new Set([...qSel]); keep.delete(st.index); const pi = qIds.slice(), px = st.index; if (!keep.size) { toast('The playing song stays'); return; } const rest = qIds.filter((x, i) => !keep.has(i)); const at = rest.indexOf(curId); A.reorder(JSON.stringify(rest), Math.max(0, at)); qSel = null; renderQueue(); toastUndo(ns(keep.size) + ' removed', () => A.reorder(JSON.stringify(pi), px)); }
+    return;
+  }
+  const mo = e.target.closest('[data-more]'); if (mo) { e.stopPropagation(); e.preventDefault(); tick(); addSheet([mo.dataset.more]); return; }
+  const ua = e.target.closest('[data-ulact]'), box = $('#libbox'), l = box && box._ul;
+  if (ua && l) {
+    e.stopPropagation(); e.preventDefault(); tick(); const k = ua.dataset.ulact;
+    if (k === 'edit') ulPaint(l, !box._ed);
+    if (k === 'more') ulMenu(l);
+    if (k === 'sort') sortPop(l);
+    if (k === 'shuf') { const L = ulSongs(l).slice().sort(() => Math.random() - .5); startList(L, 0); }
+    if (k === 'miss') { const old = l.ids.slice(); l.ids = l.ids.filter(id => byId.has(id)); saveULists(); ulPaint(l, box._ed); toastUndo('Removed', () => { l.ids = old; saveULists(); ulPaint(l, box._ed); }); }
+    if (k === 'rename') popup(`<h3>Rename</h3><input class="inp" id="plname" value="${esc(l.name)}" aria-label="Playlist name" maxlength="40" style="margin:12px 0" autocomplete="off"><button class="pillbtn" data-do="go" type="button">Save</button><div class="acts"><button class="lnk" data-do="no" type="button">Cancel</button></div>`, ev => { const d = ev.target.dataset.do; if (!d) return; const v = (($('#plname') || {}).value || '').trim(); closePop(); if (d === 'go' && v) { l.name = userLists.some(x => x !== l && x.name.toLowerCase() === v.toLowerCase()) ? ulUnique(v) : v.slice(0, 40); saveULists(); const h = $('#libbox h1'); h && (h.textContent = l.name); toast('Renamed'); } });
+    return;
+  }
+  const um = e.target.closest('[data-ulm]'); if (um && l) {
+    e.stopPropagation(); e.preventDefault(); tick(); const k = +um.dataset.k, t = um.dataset.ulm, old = l.ids.slice();
+    if (t === 'rm') { l.ids.splice(k, 1); saveULists(); ulPaint(l, true); toastUndo('Removed', () => { l.ids = old; saveULists(); ulPaint(l, true); }); return; }
+    let j = k + (t === 'up' ? -1 : 1); const s = l.ids.slice(); while (j >= 0 && j < s.length && !byId.has(s[j])) j += t === 'up' ? -1 : 1; if (j < 0 || j >= s.length) return;
+    [l.ids[k], l.ids[j]] = [l.ids[j], l.ids[k]]; saveULists(); ulPaint(l, true); return;
+  }
+  const g = e.target.closest('[data-adda]'); if (g) { e.stopPropagation(); e.preventDefault(); tick(); const bx = $('#libbox'); addSheet((bx._list || []).map(s => s.id), g.dataset.adda); return; }
+  if (e.target.closest('[data-ulnew]')) { e.stopPropagation(); e.preventDefault(); tick(); newListPop([]); return; }
+  if (e.target.closest('[data-ulimp]')) { e.stopPropagation(); e.preventDefault(); tick(); m3uIn(); return; }
+}, true);
+/* hold any song to add it; hold the title on the Playing screen */
+longPress(document.body, e => { if (e.target.closest('[data-more],#qlist,.qsheet,[data-ulm],.uled')) return null; const r = e.target.closest('.row[data-id]'); return r ? r.dataset.id : null; }, id => addSheet([id]));
+longPress($('#v-play'), e => e.target.closest('.meta') && curId ? curId : null, id => { addSheet([id]); });
 function unzero() { $('#bplay').classList.remove('zero'); }
 
 /* scrubber: thickens under the finger */
@@ -1550,7 +1724,7 @@ $('#libbox').addEventListener('click', e => {
   if (t.dataset.asort) { albSort = t.dataset.asort; tick(); renderLib(); return; }
   if (t.dataset.album) { tick(); albumPage(t.dataset.album); return; }
   if (t.dataset.artist) { tick(); artistPage(t.dataset.artist); return; }
-  if (t.dataset.ul) { tick(); const l = userLists.find(x => x.id === t.dataset.ul); if (l) { const L = ulSongs(l); listPage(l.name, L, ns(L.length) + ' · ' + totalLen(L), true); $('#libbox').insertAdjacentHTML('beforeend', `<div class="centre" style="margin-top:18px"><button class="lnk sm" data-uldel="${l.id}" type="button">Delete this playlist</button></div>`); } return; }
+  if (t.dataset.ul) { tick(); const l = userLists.find(x => x.id === t.dataset.ul); if (l) ulPage(l); return; }
   if (t.dataset.uldel) { const l = userLists.find(x => x.id === t.dataset.uldel); if (l) popup(`<h3>Delete “${esc(l.name)}”?</h3><div class="sub">Only the playlist goes. Your songs stay.</div><button class="pillbtn" data-do="go" type="button">Delete</button><div class="acts"><button class="lnk" data-do="no" type="button">Keep it</button></div>`, ev => { const k = ev.target.dataset.do; if (!k) return; closePop(); if (k === 'go') { userLists = userLists.filter(x => x.id !== l.id); saveULists(); stack.length = 0; libSeg = 'lists'; renderLib(); } }); return; }
   if (t.dataset.apedit) { tick(); const l = $('#plist2'); l.classList.toggle('edit'); t.textContent = l.classList.contains('edit') ? 'Done' : 'Edit'; return; }
   if (t.dataset.axr) { tick(); alxTouch(box._apk, t.dataset.axr, 'rm'); const s = byId.get(t.dataset.axr); apRefresh(); toast(s ? '“' + s.t + '” removed. Noted' : 'Removed', 2600); return; }
@@ -1874,19 +2048,20 @@ function lyrPaint() {
 function lyrScroll() { if (!$('#app').classList.contains('haslyr')) return; const box = $('#qly'), tx = $('#qlyt'), over = Math.max(0, tx.offsetHeight - box.clientHeight + 24), dur = st.dur || (cur() ? cur().d : 0), f = dur ? Math.min(1, st.pos / dur) : 0; tx.style.transform = `translateY(${(-over * f).toFixed(1)}px)`; }
 setInterval(() => { if (window.Power && !Power.live()) return; const c = cur(); if (c && (lyrFor !== c.id || artFor !== c.id)) lyrPaint(); rowPaint(); lyrScroll(); }, 700); addEventListener('resize', () => $('#app').style.setProperty('--lyh', Math.round($('#v-play').offsetHeight * .56) + 'px'));
 function insPaint() {
-  const c = cur(); const box = $('#ins'); if (!c || !box) return;
+  const c = cur(); const box = $('#ins'); if (!box) return; if (!c) { $('#istrip').classList.add('hid'); return; }
   const q = quality(c), r = ratingOf(c.id), f = favs.has(c.id), ext = ((c.fn || '').includes('.') ? c.fn.split('.').pop() : '').toUpperCase().slice(0, 4);
-  $('#chips').innerHTML = `${ext ? `<span class="chip" title="File format">${FILEI}${esc(ext)}</span>` : ''}${q ? `<span class="chip"><span class="qb ${q.k === 'hd' ? 'hq' : q.k === 'low' ? 'lo' : ''}" aria-label="${{ low: 'Low quality', cd: 'CD quality', hd: 'HD quality' }[q.k]}, ${q.kb} kilobits per second">${q.k.toUpperCase()}</span>${q.kb}k</span>` : ''}<button class="heartb${f ? ' on' : ''}" data-ins="fav" type="button" aria-pressed="${f}" aria-label="Favourite">${HEARTI}</button><span class="chip">${st.index + 1} of ${qIds.length}</span>`;
+  $('#istrip').classList.remove('hid');
+  $('#chips').innerHTML = `<span class="chip" title="File format">${ext ? FILEI + esc(ext) : ''}</span><span class="chip">${q ? `<span class="qb ${q.k === 'hd' ? 'hq' : q.k === 'low' ? 'lo' : ''}" aria-label="${{ low: 'Low quality', cd: 'CD quality', hd: 'HD quality' }[q.k]}, ${q.kb} kilobits per second">${q.k.toUpperCase()}</span>${q.kb}k` : ''}</span><button class="heartb${f ? ' on' : ''}" data-ins="fav" type="button" aria-pressed="${f}" aria-label="Favourite">${HEARTI}<span>FAV</span></button><span class="chip">${st.index + 1} of ${qIds.length}</span>`;
   let stars = `<div class="stars${r.by === 'auto' ? ' auto' : ''}" role="radiogroup" aria-label="Rating, ${r.by === 'auto' ? 'automatic' : 'yours'}">`;
   for (let i = 1; i <= 5; i++) stars += `<button type="button" role="radio" aria-checked="${r.n === i}" data-star="${i}" aria-label="${i} ${i === 1 ? 'star' : 'stars'}" class="${i <= r.n ? 'f' : ''}">${STAR}</button>`;
-  const sb = $('#starbox') || (() => { const d = document.createElement('div'); d.id = 'starbox'; d.style.flex = 'none'; $('#chips').after(d); return d; })();
-  sb.innerHTML = stars + `<span class="who">${r.n ? (r.by === 'auto' ? 'Auto' : 'Yours') : 'Rate'}</span></div>`;
+  const sb = $('#starbox');
+  sb.innerHTML = stars + `</div><span class="who">${r.n ? (r.by === 'auto' ? 'Auto' : 'Yours') : 'Rate'}</span>`;
   const cards = $('#cards'), keep = insFor === c.id ? insIdx : 0;
   cards.innerHTML = insCards(c).join(''); thumbs(cards); insFor = c.id; insShow(keep); insMarquee();
 }
 /* when the song changes, the whole card fades out, changes while hidden, and fades back in */
 let insFade = 0;
-function insPaintSoft() { const box = $('#ins'); if (!box) return; if ($('#app').classList.contains('quiet')) { const was = insOn; insDecide(false); if (insOn !== was) { insPaint(); return; } } if (!box.querySelector('.icard') || !$('#app').classList.contains('quiet')) { insPaint(); return; } clearTimeout(insFade); box.classList.add('chg'); insFade = setTimeout(() => { insPaint(); requestAnimationFrame(() => box.classList.remove('chg')); }, 520); }
+function insPaintSoft() { const box = $('#ins'), sb = $('#istrip'); if (!box) return; if ($('#app').classList.contains('quiet')) { const was = insOn; insDecide(false); if (insOn !== was) { insPaint(); return; } } if (!box.querySelector('.icard') || sb.classList.contains('hid')) { insPaint(); return; } clearTimeout(insFade); box.classList.add('chg'); sb.classList.add('chg'); insFade = setTimeout(() => { insPaint(); requestAnimationFrame(() => { box.classList.remove('chg'); sb.classList.remove('chg'); }); }, 520); }
 let insIdx = 0;
 function insShow(i) { const cs = $('#cards').children, n = cs.length; if (!n) return; insIdx = (i % n + n) % n; [...cs].forEach((c, k) => c.classList.toggle('on', k === insIdx)); $('#idots').innerHTML = Array.from({ length: n }, (_, k) => `<i class="${k === insIdx ? 'on' : ''}"></i>`).join(''); }
 /* long lines drift from right to left, then fade and begin again */
@@ -1897,14 +2072,15 @@ function insMarquee() {
 (() => { const c = $('#cards'); let x0 = null; c.addEventListener('pointerdown', e => { x0 = e.clientX; insHold = Date.now(); });
   c.addEventListener('pointerup', e => { if (x0 === null) return; const dx = e.clientX - x0; x0 = null; if (Math.abs(dx) > 40) insShow(insIdx + (dx < 0 ? 1 : -1)); }); c.addEventListener('pointercancel', () => { x0 = null; }); })();
 setInterval(() => { if (window.Power && Power.t !== 'full') return; if (!$('#app').classList.contains('quiet') || Date.now() - insHold < 14000) return; insShow(insIdx + 1); }, 9000);
-$('#ins').addEventListener('click', e => {
+const insClick = e => {
   const t = e.target.closest('button'); const c = cur(); if (!t) { const g = e.target.closest('[data-go]'); if (!g || !c) return; tick(); if (g.dataset.go === 'queue') { wake(); openQueue(); } else if (g.dataset.go === 'play' && byId.get(g.dataset.id)) startList([byId.get(g.dataset.id)], 0); else insShow(insIdx + 1); insHold = Date.now(); return; } if (!c) return;
   if (t.dataset.star) { const n = +t.dataset.star; tick(); if (rates[c.id] === n) { delete rates[c.id]; toast('Back to the automatic rating'); } else rates[c.id] = n; saveRates(); insPaint(); const b = $(`[data-star="${n}"]`, $('#ins')); if (b && M.p()) { b.classList.add('pop'); setTimeout(() => b.classList.remove('pop'), 600); } return; }
   const a = t.dataset.ins; if (a === 'fav') { favToggle(false); }
   if (a === 'auto') { delete rates[c.id]; saveRates(); tick(); insPaint(); }
   if (a === 'pn') { tick(); A.insertNext(JSON.stringify([t.dataset.id])); toast('Plays next'); }
   if (a === 'saveq') { saveQueue(); }
-});
+};
+$('#ins').addEventListener('click', insClick); $('#istrip').addEventListener('click', insClick);
 function saveQueue() {
   const d = new Date(), nm = 'Queue · ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   popup(`<h3>Save the queue</h3><div class="sub">${ns(qIds.length)}, kept as a playlist in Library.</div><input class="inp" id="plname" value="${esc(nm)}" aria-label="Playlist name" maxlength="40" style="margin:12px 0"><button class="pillbtn" data-do="go" type="button">Save playlist</button><div class="acts"><button class="lnk" data-do="no" type="button">Not now</button></div>`, ev => { const k = ev.target.dataset.do; if (!k) return; const v = ($('#plname') || {}).value; closePop(); if (k === 'go') { const name = (v || nm).trim() || nm; userLists.unshift({ id: 'u' + Date.now(), name, ids: qIds.slice(), at: Date.now() }); saveULists(); toast('Saved “' + name + '”'); } });
@@ -2082,7 +2258,7 @@ function modesPaint() {
 }
 setInterval(() => { const sl = $('#slleft'); if (sl && window.Fx) { const m = Math.ceil(Fx.sleepLeft() / 60000); sl.textContent = m ? m + (m === 1 ? ' minute left' : ' minutes left') : ''; } }, 5000);
 setInterval(() => { if (window.Power && !Power.live()) return; const sb = $('#secb'); if (sb && DJ.on) sb.style.width = (DJ.progress() * 100) + '%'; }, 300);
-const ulHTML = () => userLists.length ? `<h2>Yours</h2><div class="list g" style="margin-bottom:12px">${userLists.map(l => { const L = ulSongs(l); return `<button class="row" data-ul="${l.id}" type="button"><div class="stk">${L.slice(0, 2).map(thHTML).join('')}</div><div class="tx"><div class="rt1">${esc(l.name)}</div><div class="rt2">${ns(L.length)}</div></div></button>`; }).join('')}</div>` : '';
+const ulHTML = () => `<h2>Yours</h2>${userLists.length ? `<div class="list g" style="margin-bottom:8px">${ulSorted().map(l => { const L = ulSongs(l); return `<button class="row" data-ul="${l.id}" type="button"><div class="stk">${L.length ? L.slice(0, 2).map(thHTML).join('') : '<span class="th emp">'+ICL+'</span>'}</div><div class="tx"><div class="rt1">${l.pin ? '<span class="pinm" aria-label="Pinned">★</span> ' : ''}${esc(l.name)}</div><div class="rt2">${ns(L.length)}${L.length ? ' · ' + totalLen(L) : ''}</div></div></button>`; }).join('')}</div>` : '<div class="sub" style="margin:0 2px 8px">Playlists you make appear here.</div>'}<div class="centre" style="margin-bottom:14px"><button class="lnk sm" data-ulnew="1" type="button">New playlist</button><button class="lnk sm" data-ulimp="1" type="button">Import</button></div>`;
 
 /* ---------- Smart playlists (0.25): the screens; the rules live in smart.js ---------- */
 const smSave = () => store.set('mp_smart', smartL);
@@ -2215,8 +2391,11 @@ function applyAll() {
   if (window.Android && Android.eq) Android.eq(S.eql | 0, S.eqm | 0, S.eqh | 0);
   const dark = S.look === 'dark' || DARKTH.has(S.look) || (S.look === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
   ROOT.dataset.theme = dark ? 'dark' : 'light';
-  if (DARKTH.has(S.look) && !sk.look) ROOT.dataset.th = S.look; else delete ROOT.dataset.th;
+  if (DARKTH.has(S.look)) ROOT.dataset.th = S.look; else delete ROOT.dataset.th;
   if (S.acc === 'gold' && !DARKTH.has(S.look)) ROOT.dataset.acc = 'gold'; else delete ROOT.dataset.acc;
+  { const H = ROOT, ed = S.gedge || 'A'; H.dataset.edge = ed; const d = (S.gdep === undefined ? 40 : S.gdep) / 100, lk = S.glook || 'clear', tn = ((S.gtn === undefined ? 30 : S.gtn) * .4).toFixed(0);
+    if (!dark) { H.style.setProperty('--gdim', (1 - d * .2 - (lk === 'smoke' ? .06 : 0)).toFixed(3)); H.style.setProperty('--gl', lk === 'accent' ? `color-mix(in srgb,var(--acc1) ${tn}%,rgba(255,255,255,.1))` : lk === 'smoke' ? 'rgba(70,80,105,.12)' : 'rgba(255,255,255,.12)'); H.style.setProperty('--sheen', ed === 'E' ? 'rgba(255,255,255,.4)' : 'rgba(255,255,255,.22)'); }
+    else { H.style.setProperty('--gdim', '1'); H.style.removeProperty('--gl'); if (ed === 'E') H.style.setProperty('--sheen', 'rgba(255,255,255,.17)'); else H.style.removeProperty('--sheen'); } }
   const h = new Date().getHours(), night = h >= 21 || h < 5;
   if (S.warm && night) ROOT.dataset.warm = 'on'; else delete ROOT.dataset.warm;
   ROOT.dataset.comp = S.comp ? 'on' : 'off'; ROOT.dataset.minic = 'comp'; ROOT.dataset.live = S.live;
@@ -2259,7 +2438,7 @@ const COLL = ['.top', '.alone', '.tools'];
 (() => { let n = 0, t0 = 0, s = 0; const f = t => { if (t0) { s += t - t0; n++; } t0 = t; if (n < 40) requestAnimationFrame(f); else document.documentElement.dataset.lite = (s / n > 26) ? 'on' : 'off'; }; setTimeout(() => requestAnimationFrame(f), 1500); })();
 function goQuiet() { const md = $('#modes'); $('#volp').classList.remove('open'); if (tab === 'play' && st.playing && !$('#qsheet').classList.contains('open') && !$('#pop').offsetParent && !(md && md.classList.contains('open')) && cur()) { $('#v-play').style.setProperty('--ph', $('#pnl').offsetHeight + 'px'); qbLock(); insDecide(true); insPaint(); COLL.forEach(q => { const el = $(q); if (el) { el.style.transition = 'none'; el.style.height = el.offsetHeight + 'px'; } }); void document.body.offsetHeight; COLL.forEach(q => { const el = $(q); if (el) el.style.transition = ''; }); $('#app').classList.add('quiet'); Viz.kick(); } }
 function armQuiet() { clearTimeout(quietT); quietT = setTimeout(goQuiet, 6000); }
-function wake(e) { const inIns = e && e.target && e.target.closest && e.target.closest('#ins'); if (!inIns) { if ($('#app').classList.contains('quiet')) { wokeAt = Date.now(); setTimeout(() => dispatchEvent(new Event('resize')), 1000); } $('#app').classList.remove('quiet'); qbFree(); clearTimeout(wake._t); wake._t = setTimeout(() => COLL.forEach(q => { const el = $(q); if (el && !$('#app').classList.contains('quiet')) el.style.height = ''; }), 1100); } armQuiet(); }
+function wake(e) { const inIns = e && e.target && e.target.closest && e.target.closest('#ins,#istrip'); if (!inIns) { if ($('#app').classList.contains('quiet')) { wokeAt = Date.now(); setTimeout(() => dispatchEvent(new Event('resize')), 1000); } $('#app').classList.remove('quiet'); qbFree(); clearTimeout(wake._t); wake._t = setTimeout(() => COLL.forEach(q => { const el = $(q); if (el && !$('#app').classList.contains('quiet')) el.style.height = ''; }), 1100); } armQuiet(); }
 ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, wake, { passive: true }));
 
 window.__back = () => {

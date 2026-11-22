@@ -41,3 +41,7 @@ Rule: a device-specific build carries the device in the internal version tag and
 - 0.45 done: Google/Openverse removed. Still open: confirm TheAudioDB and Cover Art Archive images save on the phone (health card); My sounds items from 0.44 list.
 - 0.46 done: auto pan + live view. Next: seam fades for beds, manual removal of cut sounds, My sounds in DJ, phone jitter.
 - 0.47 done. Principle: improvement is continuous, no feature freeze. Next: 0.48 reliability (large library, phone jitter, audit), 0.49 smart parts (Auto lists on smart engine, tuning), later skins/themes (Aurora, Paper, nature) and new features.
+- 0.48 done. Lesson: after removing a system, test every theme and accent. Next: 0.49 reliability (large library, phone jitter, audit), then smart parts.
+- 0.49 done: echo blur baked in canvas. Open: confirm on phone that jitter is gone; first-open stall on huge libraries (350 ms at 20,000 songs); then smart parts (Auto lists on smart engine, tuning).
+- 0.50 done. Not yet: stop after this song, drag to reorder inside playlists (arrows used), adding songs to smart playlists (rule based; copy to a playlist instead), Auto lists on smart engine (0.51), tuning.
+- 0.51 done. Open: phone check of strip with a real cover and long titles; light-glass depth feel on the phone; apply edge style to remaining small round glass buttons; Auto lists on smart engine, tuning; stop after this song; drag reorder in playlists.
