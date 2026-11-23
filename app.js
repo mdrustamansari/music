@@ -14,7 +14,7 @@ const store = window.MPS ? { get: MPS.get, set: MPS.set } : {
 const M = window.Motion, C = window.Companion, ROOT = document.documentElement;
 let S = Object.assign({ night: true, nightT: 23, nightV: 7, nightR: 5, look: 'auto', on: [], off: [], infinity: true, gap: true, acc: 'sapphire', cl: true, cmin: 30, fade: true, haptic: true, hero: 'album', acol: true, calm: false, comp: true, listen: true, warm: true, live: 2, viz: 'tide', ins: true, insf: 6, lysz: 17, st: true, sta: 50, sts: 50, stg: 50, stt: 50, stb: 60, stp: 50, sm: true, pwr: true, lv: 'auto', cover: true, djmin: 20, djmax: 70, djspeech: false, lmus: 100, lfx: 100, lkeep: true, djxf: 6, djfav: true, lslow: 14, lrev: 45, lech: 30, lwarm: 50, lvol: 70, eql: 0, eqm: 0, eqh: 0, vol: 100, norm: true, insst: 'tip', vfav: {}, lastbk: 0, insop: 100, insol: 100, xf: true, xfl: 3, mxo_soft: true, mxv_soft: 55, mxo_heavy: false, mxv_heavy: 40, mxo_thunder: true, mxv_thunder: 45, mxo_crickets: false, mxv_crickets: 35, mxo_birds: false, mxv_birds: 35, adn: true, admin: 35, admax: 100, adp: 'slow', lsleep: 0, vizc: 'accent', rip: 3, ripc: 'accent', net: false, ev: 2, eo: 40, es: 50, ea: 50, sn: 50, eb: 50, src: 'bolly', sx: { itunes: true, deezer: true, mb: true, wiki: true, adb: true }, fresh: true,  suggest: true, rem: false, speed: 1, tapHold: false, opt: true }, store.get('mp_set', {}));
 if (S.lrn === undefined) S.lrn = true; if (S.lsv === undefined) S.lsv = true; if (window.Taste) Taste.cfg(S.lrn, S.lsv);
-if (S.fresh === undefined) S.fresh = true; if (!'ABCDE'.includes(S.gedge || 'x')) S.gedge = 'A'; if (!S.glook) S.glook = 'clear'; if (S.gdep === undefined) S.gdep = 40; if (S.gtn === undefined) S.gtn = 30; if (S.insf === undefined) S.insf = S.ins === false ? 0 : 6; S.sx = Object.assign({ adb: true }, S.sx);
+if (S.fresh === undefined) S.fresh = true; if (!'ABCDE'.includes(S.gedge || 'x')) S.gedge = 'A'; if (!S.glook) S.glook = 'clear'; if (S.geng !== 'classic') S.geng = 'physical'; if (S.gdep === undefined) S.gdep = 40; if (S.gtn === undefined) S.gtn = 30; if (S.etop === undefined) S.etop = 90; if (S.ebot === undefined) S.ebot = 90; if (S.gsm === undefined) S.gsm = 15; if (S.golv === undefined) S.golv = 40; if (S.insf === undefined) S.insf = S.ins === false ? 0 : 6; S.sx = Object.assign({ adb: true }, S.sx);
 { const raw = store.get('mp_set', {}); if (raw.viz === undefined && raw.hero === 'blob') S.viz = 'blob'; if (raw.viz === undefined && raw.hero === 'album') S.viz = 'none'; }
 if (!['none', 'tide', 'bars', 'wave', 'lights', 'disc'].includes(S.viz)) S.viz = 'tide';
 let favs = new Set(store.get('mp_favs', [])), marks = store.get('mp_marks', []), tried = store.get('mp_tried', {}), snooze = store.get('mp_snooze', 0);
@@ -140,12 +140,12 @@ const thHTML = s => `<div class="th" data-id="${s.id}" style="background:${CDBG}
 /* ---------- colours that follow the cover (all switchable) ---------- */
 const rgb2hs = (r, g, b) => { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; let h = 0; if (d) { h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; } return [h, d / (1 - Math.abs(mx + mn - 1) || 1)]; };
 const hueMix = (a, b, k) => { let d = ((b - a + 540) % 360) - 180; return (a + d * k + 360) % 360; };
-let col = { h1: 215, s1: 70, h2: 25, s2: 70, tone: '' };
-function setCol(h1, s1, h2, s2) { col = { h1, s1, h2, s2, tone: '' }; applyColours(); }
+let col = { h1: 215, s1: 70, h2: 25, s2: 70, tone: '', L: .97 };
+function setCol(h1, s1, h2, s2) { col = { h1, s1, h2, s2, tone: '', L: .97 }; applyColours(); }
 function applyColours() {
   const dark = ROOT.dataset.theme === 'dark', warm = ROOT.dataset.warm === 'on';
   ['--amb1', '--amb2', '--acc1', '--acc2', '--cs2'].forEach(p => ROOT.style.removeProperty(p));
-  col.tone = '';
+  col.tone = ''; col.L = dark ? .09 : .97;
   if (S.acol && !ROOT.dataset.th && ROOT.dataset.acc !== 'gold') {
     const wm = (h, t) => { let d = ((t - h + 540) % 360) - 180; d = Math.max(-18, Math.min(18, d * .55)); return (h + d + 360) % 360; };   /* night warmth nudges a hue by at most 18 degrees, so blue stays blue */
     const h1 = warm ? wm(col.h1, 28) : col.h1, h2 = warm ? wm(col.h2, 18) : col.h2;
@@ -160,9 +160,9 @@ function applyColours() {
     }
     const bgL = dark ? .09 : .97, bl = (L1 + L2) / 200;
     const L = dark ? .7 * bgL + .3 * bl : .42 * bgL + .58 * bl;
-    col.tone = L > .6 ? 'dark' : 'light';
+    col.tone = L > .6 ? 'dark' : 'light'; col.L = L;
   }
-  mood(); updateTone();
+  mood(); updateTone(); applyGlass();
 }
 /* each mode has its own atmosphere: Playing stays as the cover paints it, DJ turns cool and electric, Lofi turns warm and grainy */
 function mood() {
@@ -956,8 +956,39 @@ const heartIc = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const link = (key, v, l) => `<button class="lnk${S[key] === v ? ' on' : ''}" data-set="${key}" data-v="${v}" type="button">${l}</button>`;
 const folderList = () => [...folders.keys()].sort();
 const EDGES = [['A', 'Cut'], ['B', 'Rim'], ['C', 'Prism'], ['D', 'Frost'], ['E', 'Satin']];
+/* light glass: each look has its own range of depth, so the slider always means the same thing: how much the glass dims what is behind it */
+function glassVars(look, dep, tn, sm) { const d = dep / 100, L = col.L === undefined ? .97 : col.L, p = Math.max(5, Math.min(35, sm === undefined ? 15 : sm)) / 100;
+  /* estimate how bright the glass body will be (0 black to 1 white) from the backdrop, the dimming, the tint and the firmer body of floating glass, so the text can follow it */
+  let dim, ov, lov, tint = 0;
+  if (look === 'smoke') { dim = 1 - p * .9; ov = p * .25; lov = .25; }
+  else { dim = 1 - (.01 + d * .12); ov = .16; lov = 1; if (look === 'accent') tint = tn * .004; }
+  const lum = (o, t) => L * dim * (1 - o - t) + o * lov + t * .3;
+  let Lb = lum(ov, tint);
+  if (look !== 'smoke' && Lb < .66) { ov = Math.min(.6, ov + (.66 - Lb) * 1.2); Lb = lum(ov, tint); }
+  const gl = look === 'accent' ? `color-mix(in srgb,var(--acc1) ${Math.round(tint * 100)}%,rgba(255,255,255,${ov.toFixed(3)}))` : look === 'smoke' ? `rgba(70,80,105,${ov.toFixed(3)})` : `rgba(255,255,255,${ov.toFixed(3)})`;
+  /* floating glass (mini player, tabs, sheets) sits over moving text, so its body is firmer */
+  const fa = .66; let glf, Lc = .97;
+  if (look === 'smoke') { const R = Math.round(255 * (1 - p * .75)); glf = `rgba(${R},${R},${Math.min(255, R + 6)},${fa})`; Lc = R / 255; }
+  else if (look === 'accent') glf = `color-mix(in srgb,var(--acc1) ${Math.round(tint * 70)}%,rgba(255,255,255,${fa}))`;
+  else glf = `rgba(255,255,255,${fa})`;
+  const Lf = L * dim * (1 - fa) + fa * Lc;
+  return { dim: dim.toFixed(3), gl, glf, lum: Lb, lumf: Lf }; }
+/* Glass engine and the light sensor for text on glass */
+function applyGlass() {
+  const H = ROOT, dark = H.dataset.theme === 'dark', eng = S.geng === 'classic' ? 'classic' : 'physical', ed = S.gedge || 'A', lk = S.glook || 'clear', dp = S.gdep === undefined ? 40 : S.gdep, tn = S.gtn === undefined ? 30 : S.gtn;
+  H.dataset.geng = eng; H.dataset.edge = ed; H.dataset.glook = lk; H.dataset.gol = S.gol ? 'on' : 'off';
+  const rm = () => ['--gdim', '--gl', '--sheen', '--glf', '--oc'].forEach(p => H.style.removeProperty(p));
+  H.style.setProperty('--et', ((S.etop === undefined ? 90 : S.etop) / 100).toFixed(2)); H.style.setProperty('--eb', ((S.ebot === undefined ? 90 : S.ebot) / 100).toFixed(2));
+  delete H.dataset.gtf;
+  if (dark) { rm(); H.style.setProperty('--gdim', '1'); if (eng === 'physical' && ed === 'E') H.style.setProperty('--sheen', 'rgba(255,255,255,.17)'); delete H.dataset.gtx; }
+  else if (eng === 'classic') { rm(); H.dataset.gtx = ((col.L === undefined ? .97 : col.L) * .34 + .66) > .5 ? 'dark' : 'light'; }
+  else { const g = glassVars(lk, dp, tn, S.gsm); H.style.setProperty('--gdim', g.dim); H.style.setProperty('--gl', g.gl); H.style.setProperty('--glf', g.glf); H.style.setProperty('--sheen', ed === 'E' ? 'rgba(255,255,255,.4)' : 'rgba(255,255,255,.22)');
+    if (S.gol) H.style.setProperty('--oc', `rgba(27,32,48,${((S.golv === undefined ? 40 : S.golv) / 100 * .32).toFixed(3)})`); else H.style.removeProperty('--oc');
+    H.dataset.gtx = g.lum < .5 ? 'light' : 'dark'; H.dataset.gtf = g.lumf < .5 ? 'light' : 'dark'; }
+  document.querySelectorAll('.gsm[data-look]').forEach(el => { if (dark || eng === 'classic') { el.style.removeProperty('--gdim'); el.style.removeProperty('--gl'); } else { const g = glassVars(el.dataset.look, dp, tn, S.gsm); el.style.setProperty('--gdim', g.dim); el.style.setProperty('--gl', g.gl); } });
+}
 const SECT = {
-  glass: () => `<h2>Glass</h2><div class="gprev" aria-hidden="true"><div class="g"><b>Kesariya (Dance Mix)</b><small>Pritam, Arijit Singh</small></div></div><div class="list g" style="margin-top:12px"><div class="setrow"><div style="min-width:0"><div class="s1">Edge</div><div class="s2">How light catches the top and bottom edges of every glass card. Cut: bright and fading. Rim: crisp. Prism: a touch of colour. Frost: one soft line. Satin: Frost with a gentle sheen.</div><div class="links" data-grp="gedge" style="margin-top:10px;flex-wrap:wrap">${EDGES.map(e => link('gedge', e[0], e[1])).join('')}</div></div></div><div class="setrow"><div style="min-width:0"><div class="s1">Light glass</div><div class="s2">For Light mode only; Dark keeps its own glass. Clear lets the screen show through, a little darker so the edges shine.</div><div class="links" data-grp="glook" style="margin-top:10px">${link('glook', 'clear', 'Clear')}${link('glook', 'accent', 'Accent')}${link('glook', 'smoke', 'Smoke')}</div></div></div><div class="setrow rng"><div><div class="s1">Glass depth</div><input type="range" min="0" max="100" step="5" value="${S.gdep}" data-rng="gdep" aria-label="Glass depth in light mode"></div></div><div class="setrow rng"><div><div class="s1">Accent tint</div><div class="s2">Used by Accent.</div><input type="range" min="0" max="100" step="5" value="${S.gtn}" data-rng="gtn" aria-label="Accent tint amount"></div></div></div>`,
+  glass: () => `<h2>Glass</h2><div class="gprev" aria-hidden="true"><div class="g"><b>Kesariya (Dance Mix)</b><small>Pritam, Arijit Singh</small></div></div><div class="list g" style="margin-top:12px"><div class="setrow"><div style="min-width:0"><div class="s1">Glass engine</div><div class="s2">Classic is the original glass of this app. Physical is clear glass with shining edges.</div></div><div class="links" data-grp="geng">${link('geng', 'classic', 'Classic')}${link('geng', 'physical', 'Physical')}</div></div><div class="gphys"><div class="setrow" style="padding-bottom:6px"><div><div class="s1">Edge</div><div class="s2">How light catches the edges of every glass card. The light follows the curve of the corners and fades before the sides.</div></div></div><div class="gts e5" role="group" aria-label="Glass edge">${EDGES.map(e => `<button class="gt${S.gedge === e[0] ? ' on' : ''}" data-set="gedge" data-v="${e[0]}" data-edge="${e[0]}" type="button" aria-pressed="${S.gedge === e[0]}"><span class="g gsm"></span>${e[1]}</button>`).join('')}</div><div class="setrow rng"><div><div class="s1">Top edge</div><div class="s2">How brightly the upper edge shines.</div><input type="range" min="0" max="100" step="5" value="${S.etop}" data-rng="etop" aria-label="Top edge opacity"></div></div><div class="setrow rng"><div><div class="s1">Bottom edge</div><div class="s2">How brightly the lower edge shines.</div><input type="range" min="0" max="100" step="5" value="${S.ebot}" data-rng="ebot" aria-label="Bottom edge opacity"></div></div><div class="setrow glt" style="padding-bottom:6px"><div><div class="s1">Light glass</div><div class="s2">For Light mode only; Dark keeps its own glass. Each tile shows its look at the settings below. Text follows the glass: dark on bright glass, light if the glass turns dark.</div></div></div><div class="gts e3 glt" role="group" aria-label="Light glass">${[['clear', 'Clear'], ['accent', 'Accent'], ['smoke', 'Smoke']].map(e => `<button class="gt${S.glook === e[0] ? ' on' : ''}" data-set="glook" data-v="${e[0]}" type="button" aria-pressed="${S.glook === e[0]}"><span class="g gsm" data-look="${e[0]}"${ROOT.dataset.theme === 'dark' ? '' : (g => ` style="--gdim:${g.dim};--gl:${g.gl}"`)(glassVars(e[0], S.gdep, S.gtn, S.gsm))}></span>${e[1]}</button>`).join('')}</div><div class="setrow rng glt gdep"><div><div class="s1">Glass depth</div><div class="s2">How much the glass dims what is behind it.</div><input type="range" min="0" max="100" step="5" value="${S.gdep}" data-rng="gdep" aria-label="Glass depth in light mode"></div></div><div class="setrow rng glt gacc"><div><div class="s1">Accent tint</div><div class="s2">How much of your accent colour the Accent glass takes.</div><input type="range" min="0" max="100" step="5" value="${S.gtn}" data-rng="gtn" aria-label="Accent tint amount"></div></div><div class="setrow rng glt gsmk"><div><div class="s1">Smoke darkness</div><div class="s2">Kept gentle, so Light mode stays light.</div><input type="range" min="5" max="35" step="1" value="${S.gsm}" data-rng="gsm" aria-label="Smoke darkness"></div></div><div class="glt">${toggleRow('gol', 'Outline', 'A faint hairline round every glass object, so it stands apart from a light background.')}</div><div class="setrow rng glt golr"><div><div class="s1">Outline strength</div><input type="range" min="0" max="100" step="5" value="${S.golv}" data-rng="golv" aria-label="Outline opacity"></div></div></div></div>`,
   screen: () => `<h2>Playing screen</h2>
     <div class="list g" style="margin-top:12px">${toggleRow('acol', 'Colours from the album', 'Tints the screen with the cover’s colours.')}${toggleRow('calm', 'Calm minimal', 'Hides the busy parts and keeps the screen quiet.')}${toggleRow('sm', 'Small album art', 'Shows the cover at 125 px when there are no lyrics. Turn off for the large cover.')}${toggleRow('comp', 'Companion', 'A small face that reacts to the music.')}${toggleRow('listen', 'Visuals move with the music', 'Needs the music to pass through the app. Turn off if playback stops with the screen off.')}</div>`,
   quiet: () => `<div class="list g" style="margin-top:12px">${toggleRow('cover', 'Show the album art', 'Turn off to keep only the visualiser and its echoes.')}<div class="setrow rng"><div><div class="s1">Info card when quiet</div><div class="s2">How often the song’s details appear on the quiet screen. At Never the card stays hidden and the lyrics show instead, when the song has them.</div><input type="range" min="0" max="6" step="1" value="${S.insf}" data-rng="insf" aria-label="How often the info card appears"></div></div><div class="setrow rng"><div><div class="s1">Lyrics text size</div><div class="s2">The size of the lyrics on the quiet screen.</div><input type="range" min="14" max="28" step="1" value="${S.lysz || 17}" data-rng="lysz" aria-label="Lyrics text size"></div></div><div class="setrow"><div class="s1">Card style</div><div class="links" data-grp="insst">${link('insst', 'tip', 'Tooltip')}${link('insst', 'glass', 'Glass')}</div></div><div class="setrow rng"><div><div class="s1">Card background</div><input type="range" min="0" max="100" step="5" value="${S.insop}" data-rng="insop" aria-label="Tooltip background opacity"></div></div><div class="setrow rng"><div><div class="s1">Hairline border</div><input type="range" min="0" max="100" step="5" value="${S.insol}" data-rng="insol" aria-label="Outline opacity"></div></div></div>`,
@@ -2373,7 +2404,7 @@ $('#libbox').addEventListener('input', e => {
 const SEC = ['djmin', 'djmax', 'djxf', 'cmin'];
 const INSF = ['Never', 'Rarely', 'Seldom', 'Sometimes', 'Often', 'Mostly', 'Always'];
 const hr12 = v => v === 0 || v === 24 ? '12 AM' : v < 12 ? v + ' AM' : v === 12 ? '12 PM' : (v - 12) + ' PM';
-function rvText(r) { const k = r.dataset.rng, v = +r.value; if (k === 'nightT' || k === 'nightR') return hr12(v); if (k === 'nightV') return v + '%'; if (k === 'lysz') return v + ' px'; if (k === 'insf') return INSF[v] || String(v); if (/^eq[lmh]$/.test(k)) return (v > 0 ? '+' : '') + v + ' dB'; if (k === 'xfl') return v + ' s'; return SEC.includes(k) ? v + ' s' : (+r.max === 100 || k === 'lslow') ? v + '%' : String(v); }
+function rvText(r) { const k = r.dataset.rng, v = +r.value; if (k === 'nightT' || k === 'nightR') return hr12(v); if (k === 'nightV') return v + '%'; if (k === 'lysz') return v + ' px'; if (k === 'insf') return INSF[v] || String(v); if (/^eq[lmh]$/.test(k)) return (v > 0 ? '+' : '') + v + ' dB'; if (k === 'xfl') return v + ' s'; return SEC.includes(k) ? v + ' s' : (+r.max === 100 || k === 'lslow' || k === 'gsm') ? v + '%' : String(v); }
 function decorateRanges() {
   document.querySelectorAll('input[type=range][data-rng]:not([data-rv])').forEach(r => { const row = r.closest('.setrow'), lab = row && row.querySelector('.s1'); if (!lab) return; r.dataset.rv = 1; const o = document.createElement('output'); o.className = 'rv'; o.textContent = rvText(r); lab.appendChild(o); r._o = o; });
 }
@@ -2393,9 +2424,7 @@ function applyAll() {
   ROOT.dataset.theme = dark ? 'dark' : 'light';
   if (DARKTH.has(S.look)) ROOT.dataset.th = S.look; else delete ROOT.dataset.th;
   if (S.acc === 'gold' && !DARKTH.has(S.look)) ROOT.dataset.acc = 'gold'; else delete ROOT.dataset.acc;
-  { const H = ROOT, ed = S.gedge || 'A'; H.dataset.edge = ed; const d = (S.gdep === undefined ? 40 : S.gdep) / 100, lk = S.glook || 'clear', tn = ((S.gtn === undefined ? 30 : S.gtn) * .4).toFixed(0);
-    if (!dark) { H.style.setProperty('--gdim', (1 - d * .2 - (lk === 'smoke' ? .06 : 0)).toFixed(3)); H.style.setProperty('--gl', lk === 'accent' ? `color-mix(in srgb,var(--acc1) ${tn}%,rgba(255,255,255,.1))` : lk === 'smoke' ? 'rgba(70,80,105,.12)' : 'rgba(255,255,255,.12)'); H.style.setProperty('--sheen', ed === 'E' ? 'rgba(255,255,255,.4)' : 'rgba(255,255,255,.22)'); }
-    else { H.style.setProperty('--gdim', '1'); H.style.removeProperty('--gl'); if (ed === 'E') H.style.setProperty('--sheen', 'rgba(255,255,255,.17)'); else H.style.removeProperty('--sheen'); } }
+  applyGlass();
   const h = new Date().getHours(), night = h >= 21 || h < 5;
   if (S.warm && night) ROOT.dataset.warm = 'on'; else delete ROOT.dataset.warm;
   ROOT.dataset.comp = S.comp ? 'on' : 'off'; ROOT.dataset.minic = 'comp'; ROOT.dataset.live = S.live;

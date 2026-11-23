@@ -150,3 +150,6 @@ ReplayGain, waveform scrubber, mood groups, swipe for volume, double-tap bookmar
 - 0.49 nord5: echoes blurred inside small canvases, Playing screen smoother; large library (20,000 songs) checked.
 - 0.50 nord5: Add to queue/playlist everywhere; playlist editing, sorting, import and export; queue selection, sort, shuffle, earlier queues; wrapped quick question.
 - 0.51 nord5: one permanent song strip without a card; slim banner for other info; five glass edges; clear light-mode glass with live preview in Settings.
+- 0.52 nord5: Classic (original) and Physical glass engines; five clearly different edges, lower edge mirrors the upper; light sensor for text on glass; smaller, exactly aligned song strip.
+- 0.53 nord5: every glass strength has a slider with its value beside the label (top edge, bottom edge, Smoke darkness, outline strength); the controls appear only when they apply.
+- 0.54 nord5: glass edge fades from the start of the corner to its midpoint; the cover area always ends above the song strip, whatever is switched off.
