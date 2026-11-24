@@ -1,7 +1,7 @@
 /* Liquid glass engine (independent: Classic and Physical never load or call any of this).
    Level  off   = clear glass with a soft rim, nothing animated, no lens
           part  = lens on the big surfaces (Queue sheet, mini player, tabs, pop-ups) + touch glow
-          full  = lens on every glass object, tilt light, glass that forms out of the background when it appears
+          full  = lens on every glass object, glass that forms out of the background when it appears
    The lens is an SVG displacement map (made once per size and shared) used as the element's backdrop-filter.
    It only runs on surfaces that are on screen, never while the app is hidden or in low power. */
 (function (root) {
@@ -9,11 +9,11 @@
   const BIG = '.qsheet,#mini,.tabs,#pop,.bms,#smsheet,#toast,.gprev>.g';
   const ALL = '.g,.alone,.tabs,#mini,#pop,#toast,.qsheet,.bms,#smsheet';
   const NS = 'http://www.w3.org/2000/svg', MAXN = 70;
-  const L = { on: false, lv: 'part', len: 55, firm: 20, rim: 70, tilt: false, mat: 'clear', frost: 50, tint: 30 };
+  const L = { on: false, lv: 'part', len: 55, firm: 20, rim: 70, mat: 'clear', frost: 50, tint: 30 };
   const doc = document, H = doc.documentElement;
   const reduce = () => !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const canLens = () => { try { return CSS.supports('(backdrop-filter:url(#a)) or (-webkit-backdrop-filter:url(#a))'); } catch (e) { return false; } };
-  let svg = null, io = null, ro = null, mo = null, cmo = null, seq = 0, glow = null, glowRaf = 0, rt = 0, lastT = 0, lastA = 0, tiltCur = 0, oriOn = false;
+  let svg = null, io = null, ro = null, mo = null, cmo = null, seq = 0, glow = null, glowRaf = 0, rt = 0;
   const maps = new Map();   /* key -> {id, f, dm, img, w, h, r, raf} */
   const els = new Map();    /* element -> {key, vis, on} */
   let nvis = 0;
@@ -100,7 +100,7 @@ function setBF(el, v) { if (v) { el.style.setProperty('-webkit-backdrop-filter',
     if (els.has(el)) return; const t = { key: null, vis: false, on: false }; els.set(el, t);
     if (io) io.observe(el); if (ro) ro.observe(el);
   }
-  function untrack(el) { const t = els.get(el); if (!t) return; if (io) io.unobserve(el); if (ro) ro.unobserve(el); if (t.on) { nvis--; disengage(el, t); } els.delete(el); el.style.removeProperty('--lqa'); }
+  function untrack(el) { const t = els.get(el); if (!t) return; if (io) io.unobserve(el); if (ro) ro.unobserve(el); if (t.on) { nvis--; disengage(el, t); } els.delete(el); }
 
   function refresh() {
     if (!L.on) return;
@@ -122,32 +122,7 @@ function setBF(el, v) { if (v) { el.style.setProperty('-webkit-backdrop-filter',
     glowRaf = requestAnimationFrame(step);
   }
 
-  /* tilt: the rim light and the sheen move as the phone tilts; at most about 15 updates a second, stopped when hidden */
-  /* only the always-visible small surfaces turn with the tilt (never the big sheets: a moving light under a lens made them flash and heat the phone) */
-  const TILTSEL = '#mini.lqrim,.tabs.lqrim,.gprev>.g.lqrim';
-  const sheetOpen = () => { for (const [el, t] of els) if (t.vis && el.matches('.qsheet,.bms,#smsheet,#pop')) { const r = el.getBoundingClientRect(); if (r.height > 30 && r.top < innerHeight - 24 && r.bottom > 24) return true; } return false; };
-  const T = { got: 0, ang: 0, last: 0, src: '', st: 0 };
-  function tiltTo(g, b, src) {
-    if (doc.hidden) return; const P = root.Power; if (P && (P.t === 'black' || P.t === 'off')) return;
-    T.got++; T.src = src; const n = performance.now(); if (n - lastT < 66) return;
-    if (sheetOpen()) return; const tg = Math.max(-55, Math.min(55, g * 1.2 + (b - 50) * .4)); tiltCur += (tg - tiltCur) * .5; T.ang = tiltCur;
-    if (n - T.st > 450) { T.st = n; root.dispatchEvent(new Event('lq-status')); }
-    if (Math.abs(tiltCur - lastA) < .5) return; lastA = tiltCur; lastT = n;
-    const v = tiltCur.toFixed(1) + 'deg'; doc.querySelectorAll(TILTSEL).forEach(el => el.style.setProperty('--lqa', v));
-  }
-  const onOri = e => { if (e.gamma == null && e.beta == null) return; T.o = performance.now(); tiltTo(e.gamma || 0, e.beta || 0, 'orientation'); };
-  const onMot = e => { if (performance.now() - (T.o || 0) < 2000) return; const g = e.accelerationIncludingGravity; if (!g || g.x == null) return; tiltTo(Math.asin(Math.max(-1, Math.min(1, g.x / 9.81))) * -57.3, Math.atan2(g.y || 0, g.z || 0) * 57.3 - 40, 'motion'); };
-  function wireTilt(on) {
-    on = on && L.lv === 'full' && L.tilt;
-    if (on && !oriOn) {
-      root.addEventListener('deviceorientation', onOri, { passive: true }); root.addEventListener('deviceorientationabsolute', onOri, { passive: true }); root.addEventListener('devicemotion', onMot, { passive: true }); oriOn = true; T.got = 0;
-      try { if (root.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') doc.addEventListener('pointerdown', () => DeviceOrientationEvent.requestPermission().catch(() => {}), { once: true }); } catch (e) {}
-    } else if (!on && oriOn) {
-      root.removeEventListener('deviceorientation', onOri); root.removeEventListener('deviceorientationabsolute', onOri); root.removeEventListener('devicemotion', onMot); oriOn = false;
-      doc.querySelectorAll(TILTSEL).forEach(el => el.style.removeProperty('--lqa'));
-    }
-  }
-  /* elements that carry the rim ring get a marker class so the tilt only touches them */
+  /* elements that carry the rim ring get a marker class (kept for styling) */
   function markRims(on) { doc.querySelectorAll('.list.g,.card.g,.tabs,#mini,#pop,#toast,.qsheet,.bms,#smsheet,.alone,.hcard.g,.tile.g,.rcard.g,.search.g,.smlive,.row.add.g,.gprev>.g').forEach(el => el.classList.toggle('lqrim', on)); }
 
   function start() {
@@ -160,20 +135,20 @@ function setBF(el, v) { if (v) { el.style.setProperty('-webkit-backdrop-filter',
     doc.addEventListener('pointerdown', pd, { capture: true, passive: true }); root.addEventListener('pointerup', pu, { passive: true }); root.addEventListener('pointercancel', pu, { passive: true });
     doc.addEventListener('visibilitychange', vis);
   }
-  function vis() { if (!L.on) return; if (doc.hidden) { els.forEach((t, el) => { if (t.on) { nvis--; disengage(el, t); } }); wireTilt(false); } else { refresh(); els.forEach((t, el) => { if (t.vis && !t.on && lensOK() && nvis < MAXN) { nvis++; engage(el, t, false); } }); wireTilt(true); } }
+  function vis() { if (!L.on) return; if (doc.hidden) { els.forEach((t, el) => { if (t.on) { nvis--; disengage(el, t); } }); } else { refresh(); els.forEach((t, el) => { if (t.vis && !t.on && lensOK() && nvis < MAXN) { nvis++; engage(el, t, false); } }); } }
 
   function stop() {
     if (!L.on) return; L.on = false;
-    els.forEach((t, el) => { disengage(el, t); el.style.removeProperty('--lqa'); el.style.removeProperty('--lqo'); el.style.removeProperty('--lqx'); el.style.removeProperty('--lqy'); });
+    els.forEach((t, el) => { disengage(el, t); el.style.removeProperty('--lqo'); el.style.removeProperty('--lqx'); el.style.removeProperty('--lqy'); });
     els.clear(); nvis = 0; maps.forEach(m => { cancelAnimationFrame(m.raf); m.f.remove(); }); maps.clear();
-    [io, ro, mo, cmo].forEach(o => o && o.disconnect()); io = ro = mo = cmo = null; wireTilt(false);
+    [io, ro, mo, cmo].forEach(o => o && o.disconnect()); io = ro = mo = cmo = null;
     doc.removeEventListener('pointerdown', pd, true); root.removeEventListener('pointerup', pu); root.removeEventListener('pointercancel', pu); doc.removeEventListener('visibilitychange', vis);
     ['--lqF', '--lqR', '--lqB', '--lqA'].forEach(p => H.style.removeProperty(p)); delete H.dataset.lq; delete H.dataset.lqm; markRims(false);
   }
 
   function apply(S, col) {
     const lv = ['off', 'part', 'full'].includes(S.lql) ? S.lql : 'part', prev = L.lv;
-    L.lv = lv; L.len = S.lqs === undefined ? 55 : S.lqs; L.firm = S.lqf === undefined ? 20 : S.lqf; L.rim = S.lqr === undefined ? 70 : S.lqr; L.tilt = !!S.lqtl; L.mat = S.lqm === 'frost' ? 'frost' : 'clear'; L.frost = S.lqi === undefined ? 50 : S.lqi; L.tint = S.lqt === undefined ? 30 : S.lqt;
+    L.lv = lv; L.len = S.lqs === undefined ? 55 : S.lqs; L.firm = S.lqf === undefined ? 20 : S.lqf; L.rim = S.lqr === undefined ? 70 : S.lqr; L.mat = S.lqm === 'frost' ? 'frost' : 'clear'; L.frost = S.lqi === undefined ? 50 : S.lqi; L.tint = S.lqt === undefined ? 30 : S.lqt;
     H.dataset.geng = 'liquid'; H.dataset.lq = lv; H.dataset.lqm = L.mat;
     ['--gdim', '--gl', '--sheen', '--glf', '--oc', '--et', '--eb'].forEach(p => H.style.removeProperty(p));
     H.style.setProperty('--lqF', (L.firm / 100).toFixed(2)); H.style.setProperty('--lqR', (L.rim / 100).toFixed(2)); H.style.setProperty('--lqB', blurPx() + 'px'); H.style.setProperty('--lqA', bodyA().toFixed(3));
@@ -185,14 +160,12 @@ function setBF(el, v) { if (v) { el.style.setProperty('-webkit-backdrop-filter',
     const rebuild = wasOn && prev !== lv && (prev === 'full' || lv === 'full');
     if (rebuild) { els.forEach((t, el) => { if (t.on) { nvis--; disengage(el, t); } }); maps.forEach(m => { cancelAnimationFrame(m.raf); m.f.remove(); }); maps.clear(); }
     refresh(); if (rebuild) els.forEach((t, el) => { if (t.vis && !t.on && lensOK() && nvis < MAXN) { nvis++; engage(el, t, false); } });
-    if (wasOn && !rebuild) { rescale(); } wireTilt(true); setTimeout(() => root.dispatchEvent(new Event('lq-status')), 600);
+    if (wasOn && !rebuild) { rescale(); } setTimeout(() => root.dispatchEvent(new Event('lq-status')), 600);
   }
   function status() {
   const lens = L.lv !== 'off' ? (canLens() ? (nvis ? 'Lens: running on ' + nvis + (nvis === 1 ? ' surface' : ' surfaces') + (L.lv === 'full' ? ', with colour fringe' : '') + '.' : 'Lens: ready, nothing to bend on this screen.') : 'Lens: this browser cannot draw it, so a soft edge is used.') : 'Lens: off.';
-  let tilt = 'Tilt: off (needs Full).';
-  if (L.lv === 'full' && !L.tilt) tilt = 'Tilt: switched off. Turn on Tilt light to make the edge light follow your phone.';
-  else if (L.lv === 'full') tilt = T.got ? 'Tilt: ' + T.ang.toFixed(0) + '° from the ' + T.src + ' sensor. It turns the edge light on the preview, the mini player and the tabs.' : (oriOn ? 'Tilt: waiting for the phone sensor. If nothing arrives, motion sensors may be blocked for this site.' : 'Tilt: off.');
-  return lens + ' ' + tilt;
+  
+  return lens;
 }
 root.Liquid = { apply, stop, status };
 })(window);

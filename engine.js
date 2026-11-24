@@ -561,7 +561,7 @@ both('play', () => { try { navigator.mediaSession.playbackState = 'playing'; } c
 both('pause', () => { try { navigator.mediaSession.playbackState = 'paused'; } catch (e) {} });
 
 /* ---------- the door (same names as the Android version) ---------- */
-E.version = () => '0.57 nord5 web';
+E.version = () => '0.58 nord5 web';
 E.hasPerm = () => true; E.askPerm = () => {};
 E.library = () => JSON.stringify(metas.map(m => ({ id: m.id, t: m.t, a: m.a, al: m.al, d: m.d, p: m.p, f: m.f, ad: m.ad, hk: !!m.ak, o: !!m.orig, mn: m.man ? Object.keys(m.man).join(',') : '', ly: !!m.ly, sz: m.size || 0, g: m.g || '', y: m.y || 0, ys: m.ys || '', yc: m.yc || 0, yv: m.yv || [], n: m.n || 0, rg: m.rg === undefined ? null : m.rg, pk: m.pk || 0 })));
 E.names = () => {};

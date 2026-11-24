@@ -370,3 +370,4 @@ Real recordings, levelled to one loudness, faded in and out, drifting slowly, ne
 - 0.55 nord5: Liquid glass = lens at the rim on all four sides, clear or frosted, rim light that follows the corners. Independent of Classic and Physical.
 - 0.56 nord5: a rim is a hint, never the glass itself: faint in dark mode, gentle in light. The edge is shown by refraction with a thin colour fringe.
 - 0.57 nord5: tilt moves only the edge light of small, always-visible glass; no moving light under big lensed sheets.
+- 0.58 nord5: no sensor-driven decoration in Liquid glass.
