@@ -11,6 +11,9 @@ const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 /* which part of a song to use: chosen at random, leaning towards where your listening piled up, never the first 20 seconds,
    and steering away from sections and lengths it has already used for that song, so each mix is new */
 D.hist = { sec: {}, pairs: [] }; D.lastId = null;
+/* a short log, shown in Settings, so it is visible what DJ mode is doing and why it failed */
+D.log = []; const lg = m => { const d = new Date(); D.log.unshift(d.toTimeString().slice(0, 8) + ' ' + m); D.log.length = Math.min(D.log.length, 6); try { dispatchEvent(new Event('lq-status')); } catch (e) {} };
+D.status = () => D.on ? 'DJ is ' + (D.paused ? 'paused' : 'playing') + '; the next section is ' + (D.next || queued ? 'ready' : 'being prepared') + '.' + (D.log.length ? ' Latest: ' + D.log.slice(0, 3).join(' · ') : '') : 'DJ is off.' + (D.log.length ? ' Last time: ' + D.log.slice(0, 2).join(' · ') : '');
 D.section = (song, heat) => {
   const d = song.d, bs = 5;
   /* sections you chose yourself with A-B repeat come first, most often, but never alone: the rest of the time the mix still finds its own parts */
@@ -59,25 +62,25 @@ async function render(tr) {
 }
 async function prepare() {
   if (busy || D.next || !D.on) return; busy = true;
-  try { for (let k = 0; k < 4 && D.on; k++) { const nx = pick(); if (!nx) break; try { nx.buf = await render(nx); nx.xf = D.opt.xf; D.next = nx; break; } catch (e) {} } } finally { busy = false; }
+  const t0 = performance.now();
+  try { for (let k = 0; k < 4 && D.on; k++) { const nx = pick(); if (!nx) { lg('no song long enough to use'); break; } try { nx.buf = await render(nx); nx.xf = D.opt.xf; D.next = nx; lg('next section ready (' + Math.round(performance.now() - t0) + ' ms)'); break; } catch (e) { lg('could not read a song: ' + (e && e.message || e)); } } } finally { busy = false; }
 }
 function place(sec, when, xfIn) { /* put a prepared section on the audio clock */
   const ac = g.ac, s = ac.createBufferSource(), gn = ac.createGain(); s.buffer = sec.buf; s.connect(gn); gn.connect(bus);
   const xo = sec.xf || D.opt.xf; gn.gain.setValueAtTime(0, when); gn.gain.linearRampToValueAtTime(1, when + xfIn);
   gn.gain.setValueAtTime(1, when + sec.l); gn.gain.linearRampToValueAtTime(0, when + sec.l + xo);
   s.start(when); s.stop(when + sec.buf.duration + .1); sec.src = s; sec.gn = gn; sec.start = when; sec.xfIn = xfIn;
-  s.onended = () => { try { gn.disconnect(); } catch (e) {} if (sec.buf) sec.buf = null; };
+  s.onended = () => { try { gn.disconnect(); } catch (e) {} if (sec.buf) sec.buf = null; try { tick(); } catch (e) {} };
 }
 function fadeNow(sec, dur) { const t = g.ac.currentTime; try { const v = sec.gn.gain.value; sec.gn.gain.cancelScheduledValues(t); sec.gn.gain.setValueAtTime(v, t); sec.gn.gain.linearRampToValueAtTime(0, t + dur); sec.src.stop(t + dur + .05); } catch (e) {} }
 function say() { D.onchange && D.onchange(); try { const t = D.now; if (t && 'mediaSession' in navigator) { navigator.mediaSession.metadata = new MediaMetadata({ title: t.t, artist: 'DJ mode', album: t.a || '' }); navigator.mediaSession.playbackState = D.paused ? 'paused' : 'playing'; } } catch (e) {} }
 let queued = null; /* the next section, once placed on the clock */
 function tick() {
   if (!D.on || !cur || D.paused) return; const ac = g.ac, now = ac.currentTime;
-  if (!queued && !D.next && !busy && now > cur.start + .5) prepare();
-  if (!queued && D.next && now >= cur.start + cur.l - Math.max(1.5, (D.opt.xf || 6) * .6)) { /* place it a moment ahead of its time, exactly at the end of this section */
-    const nx = D.next; D.next = null; place(nx, Math.max(cur.start + cur.l, now + .05), nx.xf || D.opt.xf); queued = nx;
-  }
+  /* the next section goes onto the audio clock as soon as it is ready, so the hand-over never depends on a timer (timers slow down with the screen off) */
+  if (!queued && D.next) { const nx = D.next; D.next = null; place(nx, Math.max(cur.start + cur.l, now + .05), nx.xf || D.opt.xf); queued = nx; lg('next section placed'); }
   if (queued && now >= queued.start) { if (window.Taste && cur && !cur.sk) { Taste.dj(cur.id, 'end'); window.onDJHeard && onDJHeard(cur.id); } cur = D.now = queued; queued = null; say(); }
+  if (!D.next && !busy && now > cur.start + .5) prepare();
 }
 D.pos = () => { const t = D.now; return t && cur && g ? clamp(g.ac.currentTime - cur.start, 0, t.l) * 1000 : 0; };
 D.progress = () => { const t = D.now; return t && cur && g ? clamp((g.ac.currentTime - cur.start) / t.l, 0, 1) : 0; };
@@ -85,7 +88,7 @@ D.start = async () => {
   if (D.on) return true; if (!A() || !A().graph || !window.Prep) return false;
   if (window.Fx && Fx.on) Fx.stop();
   if (!build()) return false; const ac = g.ac; if (ac.state === 'suspended') await ac.resume().catch(() => {});
-  A().pause(); D.on = true; D.paused = false; A().ext = true; D.next = null; queued = null;
+  lg('started'); A().pause(); D.on = true; D.paused = false; A().ext = true; D.next = null; queued = null;
   let first = null; for (let k = 0; k < 4 && !first; k++) { const f = pick(); if (!f) break; try { f.buf = await render(f); f.xf = D.opt.xf; first = f; } catch (e) {} }
   if (!first) { D.on = false; A().ext = false; return false; }
   place(first, ac.currentTime + .15, 1.6); cur = D.now = first; say();

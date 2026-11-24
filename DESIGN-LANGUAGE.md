@@ -367,3 +367,6 @@ Real recordings, levelled to one loudness, faded in and out, drifting slowly, ne
 - 0.52 nord5: keep the original glass as a permanent option; text on glass follows the glass, not the page (dark text on bright glass, light only when the glass is dark); one fixed box per strip cell so rows and columns align; glass edges symmetrical top and bottom.
 - 0.53 nord5: a glass edge is a ring that follows the corner radius, brightest at top and bottom and fading to nothing down the sides; never a straight line. Smoke stays light in light mode (max 35%); text follows the glass. An optional faded hairline outline separates glass from a light background.
 - 0.54 nord5: an edge is full on the straight run and fades along the corner arc, invisible by the arc's midpoint. Nothing may overlap the song strip: a hidden element must not leave a negative margin behind.
+- 0.55 nord5: Liquid glass = lens at the rim on all four sides, clear or frosted, rim light that follows the corners. Independent of Classic and Physical.
+- 0.56 nord5: a rim is a hint, never the glass itself: faint in dark mode, gentle in light. The edge is shown by refraction with a thin colour fringe.
+- 0.57 nord5: tilt moves only the edge light of small, always-visible glass; no moving light under big lensed sheets.

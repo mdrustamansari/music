@@ -153,3 +153,6 @@ ReplayGain, waveform scrubber, mood groups, swipe for volume, double-tap bookmar
 - 0.52 nord5: Classic (original) and Physical glass engines; five clearly different edges, lower edge mirrors the upper; light sensor for text on glass; smaller, exactly aligned song strip.
 - 0.53 nord5: every glass strength has a slider with its value beside the label (top edge, bottom edge, Smoke darkness, outline strength); the controls appear only when they apply.
 - 0.54 nord5: glass edge fades from the start of the corner to its midpoint; the cover area always ends above the song strip, whatever is switched off.
+- 0.55 nord5: Liquid engine: the glass shape is shown by the bend of what lies behind it, not by an outline; every strength has a slider with its value; the battery cost is a visible three-step switch.
+- 0.56 nord5: Liquid shows its own state (lens running on N surfaces, tilt angle or 'waiting for sensor'); locked-screen hand-overs are logged in Settings.
+- 0.57 nord5: DJ status line shows what DJ is doing and any error; Tilt light has its own switch and a status line saying where it shows.

@@ -381,14 +381,14 @@ async function load(autoplay) {
 }
 let fadeT = null;
 function ramp(from, to, done, sec) {
-  clearInterval(fadeT); const n = sec ? Math.max(8, Math.round(sec * 25)) : 10; let i = 0; audio.volume = from;
+  clearInterval(fadeT); if (document.hidden) { audio.volume = to; done && done(); return; } const n = sec ? Math.max(8, Math.round(sec * 25)) : 10; let i = 0; audio.volume = from;
   fadeT = setInterval(() => { i++; const u = i / n, k = sec && to > from ? Math.sin(u * Math.PI / 2) : u; audio.volume = Math.max(0, Math.min(1, from + (to - from) * k)); if (i >= n) { clearInterval(fadeT); done && done(); } }, 40);
 }
 
 /* crossfade when you press Next or Previous: the old song carries on in a spare player and fades away while the new one fades in */
 let xfOn = true, xfLen = 3, xfIn = 0, ghostUrl = null;
 function ghostOut(go) {
-  if (!xfOn || !playing || audio.paused || !audio.src || (window.Fx && window.Fx.on) || !curUrl) { go(); return; }
+  if (!xfOn || document.hidden || !playing || audio.paused || !audio.src || (window.Fx && window.Fx.on) || !curUrl) { go(); return; }
   const len = xfLen, el = new Audio(), src = curUrl, t0 = audio.currentTime; let done = false, gn = null;
   const swap = () => { if (done) return; done = true; clearTimeout(bail); xfIn = len; ghostUrl = src; curUrl = null; audio.volume = 0; go(); fade(); };
   const fade = () => {
@@ -476,12 +476,12 @@ E.wave = out => {
   for (let i = 0; i < n; i++) out[i] = (tb2[i * step] - 128) / 128;
   return true;
 };
-function fadeIn() { if (!audio.src) return; ensureGraph(); const L = xfIn; xfIn = 0; if (!fadeOn && !L) { audio.volume = 1; audio.play().catch(() => {}); return; } audio.volume = 0; audio.play().then(() => ramp(0, 1, null, L)).catch(() => {}); }
-function fadeOut() { if (!fadeOn || audio.paused) { audio.pause(); audio.volume = 1; return; } ramp(audio.volume, 0, () => { audio.pause(); audio.volume = 1; }); }
+function fadeIn() { if (!audio.src) return; ensureGraph(); if (document.hidden) { xfIn = 0; audio.volume = 1; audio.play().catch(() => {}); return; } const L = xfIn; xfIn = 0; if (!fadeOn && !L) { audio.volume = 1; audio.play().catch(() => {}); return; } audio.volume = 0; audio.play().then(() => ramp(0, 1, null, L)).catch(() => {}); }
+function fadeOut() { if (!fadeOn || audio.paused || document.hidden) { audio.pause(); audio.volume = 1; return; } ramp(audio.volume, 0, () => { audio.pause(); audio.volume = 1; }); }
 /* ---------- gapless: the next song is read ahead and starts where this one ends ---------- */
 let nx = null, nxBusy = false, joinT = 0, startLag = .012, E_gap = { on: true, n: 0, last: 0 };
 const nextIdx = () => index < queue.length - 1 ? index + 1 : repeatMode === 2 && queue.length > 1 ? 0 : -1;
-const gapOk = () => E_gap.on && playing && !audio.paused && repeatMode !== 1 && !E.ext && !(window.Fx && window.Fx.on) && isFinite(audio.duration) && audio.duration > 8;
+const gapOk = () => (E_gap.on || document.hidden) && playing && !audio.paused && repeatMode !== 1 && !E.ext && !(window.Fx && window.Fx.on) && isFinite(audio.duration) && audio.duration > 8;
 const spare = () => audio === audio2 ? null : audio2;
 async function gapPrep() {
   if (nx || nxBusy || !gapOk()) return;
@@ -512,7 +512,7 @@ function gapTick() {
 /* the swap: the spare player becomes the main one */
 function swapIn(early) {
   const n = nx; if (!n) return false; nx = null; clearTimeout(joinT); joinT = 0;
-  const old = audio, oldUrl = curUrl, t0 = performance.now();
+  const old = audio, oldUrl = curUrl, t0 = performance.now(); if (early) noteEnd('early');
   if (n.el.readyState < 2) { nx = n; gapDrop(); return false; }
   n.el.volume = old.volume;
   n.el.play().catch(() => {});
@@ -526,7 +526,7 @@ function joinNow() { if (nx && nx.el.readyState >= 2 && nx.id === queue[nextIdx(
 E.gapless = on => { E_gap.on = !!on; if (!on) { clearTimeout(joinT); joinT = 0; gapDrop(); } };
 E.nowId = () => queue[index] || '';
 E.gapLag = ms => { startLag = ms / 1000; E_gap.fix = true; };
-E.gapInfo = () => ({ on: E_gap.on, joins: E_gap.n, late: E_gap.late || 0, miss: E_gap.miss || 0, lagMs: E_gap.last, lead: Math.round(startLag * 1000), ready: !!nx });
+E.gapInfo = () => ({ on: E_gap.on, joins: E_gap.n, late: E_gap.late || 0, miss: E_gap.miss || 0, lagMs: E_gap.last, lead: Math.round(startLag * 1000), ready: !!nx, log: hand });
 function next() {
   gapDrop();
   if (index < queue.length - 1) { index++; playing = true; load(true); }
@@ -534,7 +534,10 @@ function next() {
   else { playing = false; audio.pause(); }
 }
 function prev() { if (audio.currentTime > 3 || index === 0) audio.currentTime = 0; else { index--; load(playing); } }
-both('ended', () => { if (repeatMode === 1) { audio.currentTime = 0; audio.play().catch(() => {}); } else if (!joinNow()) next(); });
+let hand = [], hp = null;
+const noteEnd = path => { hp = { t: performance.now(), path, hid: document.hidden }; };
+both('playing', () => { if (hp) { hand.unshift({ at: Date.now(), path: hp.path, hid: hp.hid, ms: Math.round(performance.now() - hp.t) }); hand.length = Math.min(hand.length, 6); hp = null; } });
+both('ended', () => { if (repeatMode === 1) { noteEnd('loop'); audio.currentTime = 0; audio.play().catch(() => {}); } else { noteEnd('cold'); if (joinNow()) hp && (hp.path = 'joined'); else next(); } });
 both('loadedmetadata', () => dispatchEvent(new Event('mp-track')));
 both('timeupdate', () => { const n = Date.now(); if (n - lastSave > 5000) { lastSave = n; persist(); } gapWatch(); });
 ['pagehide', 'visibilitychange'].forEach(ev => addEventListener(ev, () => { persist(); MPS.flush(); }));
@@ -558,7 +561,7 @@ both('play', () => { try { navigator.mediaSession.playbackState = 'playing'; } c
 both('pause', () => { try { navigator.mediaSession.playbackState = 'paused'; } catch (e) {} });
 
 /* ---------- the door (same names as the Android version) ---------- */
-E.version = () => '0.54 nord5 web';
+E.version = () => '0.57 nord5 web';
 E.hasPerm = () => true; E.askPerm = () => {};
 E.library = () => JSON.stringify(metas.map(m => ({ id: m.id, t: m.t, a: m.a, al: m.al, d: m.d, p: m.p, f: m.f, ad: m.ad, hk: !!m.ak, o: !!m.orig, mn: m.man ? Object.keys(m.man).join(',') : '', ly: !!m.ly, sz: m.size || 0, g: m.g || '', y: m.y || 0, ys: m.ys || '', yc: m.yc || 0, yv: m.yv || [], n: m.n || 0, rg: m.rg === undefined ? null : m.rg, pk: m.pk || 0 })));
 E.names = () => {};
@@ -596,7 +599,7 @@ E.next = () => { if (index < queue.length - 1 || repeatMode === 2) ghostOut(() =
 E.prev = () => { if (audio.currentTime > 3 || index === 0) prev(); else ghostOut(() => prev()); };
 E.seek = ms => { audio.currentTime = ms / 1000; };
 E.shuffle = on => { shuffleOn = on; if (on && queue.length > index + 2) { const head = queue.slice(0, index + 1), tail = queue.slice(index + 1); if (window.Taste && Taste.on()) { const k = new Map(tail.map(id => [id, Math.pow(Math.random(), 1 / Math.max(.01, Taste.wx(id)))])); tail.sort((x, y) => k.get(y) - k.get(x)); } else for (let i = tail.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [tail[i], tail[j]] = [tail[j], tail[i]]; } queue = head.concat(tail); qv++; } };
-E.repeat = m => { repeatMode = m; };
+E.repeat = m => { repeatMode = m; audio.loop = audio2.loop = m === 1; };
 E.sleep = min => { clearTimeout(sleepT); if (min > 0) { sleepAt = Date.now() + min * 60000; sleepT = setTimeout(() => { sleepAt = 0; E.pause(); }, min * 60000); } else sleepAt = 0; };
 E.fade = on => { fadeOn = on; };
 E.state = () => {
