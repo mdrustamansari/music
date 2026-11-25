@@ -361,3 +361,16 @@ One app that is a calm player by day and a sleep sound system by night, with thr
 - **0.57 nord5**: (1) DJ mode: the next section goes onto the audio clock as soon as it is ready (no longer waits for a timer near the end, which the phone slows with the screen off), source end events also drive it, and Settings > DJ and Lofi shows a live DJ status line with the latest events and errors. (2) Liquid: new "Tilt light" On/Off switch (off by default, shown with Full). It turns the edge light only on the preview, mini player and tabs, never on big sheets, and the moving sheen layer that made light areas flash was removed. The status line says where to see it. (3) Liquid fix: new glass objects that appear after the screen opens (for example the preview) were not always picked up for the lens; the watcher no longer gets starved by constant small changes.
 
 - **0.58 nord5**: Tilt light removed completely (the sensor listener, its switch and its status text), because the effect was too small for its battery cost. Liquid keeps the lens, colour fringe, touch glow and forming glass. The status line now reports the lens only.
+
+- **0.59 nord5**: (1) Liquid glass: Prism edge On/Off (a soft colour gradient all round the rim), Prism tint = accent colour or pale white, and separate Top edge and Bottom edge sliders (they replace Rim light); the rim stays a faint hint in dark mode. (2) DJ mode: tested in 0.30 and now with real sound-level measurement (both play on my side). DJ now rejoins the audio chain at every start, wakes a sleeping audio engine, checks 3 s after starting whether sound really comes out, and the DJ status line in Settings shows the engine state, the live level and the output volume, so a silent DJ shows up as a number.
+
+- **0.60 nord5**: Liquid glass Prism edge rebuilt from the Physical engine's prism edge (same gradient, ring and glow technique): colour glows along the top and bottom edges, thins from where the corner begins and is gone about halfway round it, so the vertical sides stay clear. Top edge and Bottom edge sliders set the two halves; tint = accent colour or pale white. The plain (non-prism) Liquid rim is unchanged.
+
+
+## 0.61 nord5
+- DJ mode reworked: it now plays through two hidden audio players (the same kind normal playback uses) instead of decoding whole songs into memory. Crossfades are still volume ramps on the audio clock. The status line under Settings → DJ and Lofi shows each step (song ready, section placed, sound level, player state).
+- Liquid Prism edge now uses the Physical spectrum (blue, white, peach, lilac), lightly tinted by the accent; Pale white is unchanged.
+
+
+## 0.62 nord5
+- DJ mode removed completely (button, screen, Settings rows, hold-menu pill, Found by DJ list and rule, dj.js). Lofi is unchanged; its Settings group and screen are now simply called Lofi.

@@ -422,7 +422,7 @@ E.loopTo = ms => {
 let ac = null, an = null, fb = null, an2 = null, fb2 = null, tb2 = null, listenOn = false;
 let srcN = null;
 let eqB = null, eqV = [0, 0, 0], normG = null, masterG = null, normDb = 0, volV = 1; const dbG = d => Math.pow(10, d / 20);
-/* one master volume for everything (music, DJ, Lofi, sounds underneath) and a per-song level that evens out loud and quiet songs */
+/* one master volume for everything (music, Lofi, sounds underneath) and a per-song level that evens out loud and quiet songs */
 E.vol = g => { volV = g; if (masterG) masterG.gain.setTargetAtTime(g, ac.currentTime, .05); else audio.volume = Math.min(1, g); };
 E.norm = (db, fast) => { normDb = db; if (normG) { if (fast) normG.gain.value = dbG(db); else normG.gain.setTargetAtTime(dbG(db), ac.currentTime, .35); } };
 /* measure a song once: loudness (RMS after a gentle low cut, quiet gaps ignored) -> the gain that brings it to a common level */
@@ -446,7 +446,7 @@ function ensureGraph(force) {
     if (ac.state === 'suspended') ac.resume();
   } catch (e) { listenOn = false; }
 }
-/* the same graph, shared with Lofi and DJ mode (fx.js, dj.js) */
+/* the same graph, shared with Lofi (fx.js) */
 E.graph = () => { ensureGraph(true); return ac && srcN ? { ac, src: normG, an, an2, mix: eqB[0], master: masterG } : null; };
 E.el = new Proxy({}, { get: (_, k) => { if (k === 'addEventListener') return (t, fn, o) => [audio, audio2].forEach(el => el.addEventListener(t, e => { if (el === audio) fn.call(audio, e); }, o)); const v = audio[k]; return typeof v === 'function' ? v.bind(audio) : v; }, set: (_, k, v) => { audio[k] = v; return true; } });
 E.fileUrl = async id => { const b = await getv('files', id); return b ? URL.createObjectURL(b) : ''; };
@@ -561,7 +561,7 @@ both('play', () => { try { navigator.mediaSession.playbackState = 'playing'; } c
 both('pause', () => { try { navigator.mediaSession.playbackState = 'paused'; } catch (e) {} });
 
 /* ---------- the door (same names as the Android version) ---------- */
-E.version = () => '0.58 nord5 web';
+E.version = () => '0.62 nord5 web';
 E.hasPerm = () => true; E.askPerm = () => {};
 E.library = () => JSON.stringify(metas.map(m => ({ id: m.id, t: m.t, a: m.a, al: m.al, d: m.d, p: m.p, f: m.f, ad: m.ad, hk: !!m.ak, o: !!m.orig, mn: m.man ? Object.keys(m.man).join(',') : '', ly: !!m.ly, sz: m.size || 0, g: m.g || '', y: m.y || 0, ys: m.ys || '', yc: m.yc || 0, yv: m.yv || [], n: m.n || 0, rg: m.rg === undefined ? null : m.rg, pk: m.pk || 0 })));
 E.names = () => {};

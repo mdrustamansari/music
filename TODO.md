@@ -52,3 +52,11 @@ Rule: a device-specific build carries the device in the internal version tag and
 - 0.56 done. Open (phone checks): locked-screen hand-over (see "Last hand-overs" under Gapless in Settings), tilt sensor status line, lens status line, dark-mode rim. DJ and Lofi timers while the screen is off not yet audited. Dynamic shadow by background busyness still not built.
 - 0.57 done. Open (phone checks): DJ mode with the screen off (see the DJ status line in Settings > DJ and Lofi), Tilt light on the preview/mini player/tabs, heat at Liquid Full. Lofi timers with the screen off not yet audited.
 - 0.58 done: Tilt light removed completely (decided not worth the battery). Open (phone checks): DJ with the screen off, heat at Liquid Full (Partial is the cooler choice). Lofi timers with the screen off not audited.
+- 0.59 done. Open (phone checks): DJ mode sound (read the DJ status line in Settings > DJ and Lofi: it says whether sound is coming out, the audio engine state and the output volume); Prism edge look on the phone. Lofi timers with the screen off not audited.
+- 0.60 done (Liquid Prism edge now uses the Physical prism edge technique). Open (phone checks): DJ status line; Prism look on the phone.
+
+
+- 0.61: confirm on the phone that DJ plays and read the status line if it does not; check DJ timers with the screen off.
+
+
+- 0.62: DJ mode removed at the owner's request; its queued items (My sounds in DJ, DJ timers with the screen off) are dropped.

@@ -157,3 +157,10 @@ ReplayGain, waveform scrubber, mood groups, swipe for volume, double-tap bookmar
 - 0.56 nord5: Liquid shows its own state (lens running on N surfaces, tilt angle or 'waiting for sensor'); locked-screen hand-overs are logged in Settings.
 - 0.57 nord5: DJ status line shows what DJ is doing and any error; Tilt light has its own switch and a status line saying where it shows.
 - 0.58 nord5: effects must earn their battery cost; tilt light was removed for not doing so.
+- 0.59 nord5: DJ status shows the real output level, not only 'On'.
+
+
+- 0.61: DJ status line now names each step, so a silent DJ shows why (file, player, engine, level).
+
+
+- 0.62: DJ mode removed; nothing in the app refers to it any more.

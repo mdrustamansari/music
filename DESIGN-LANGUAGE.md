@@ -371,3 +371,11 @@ Real recordings, levelled to one loudness, faded in and out, drifting slowly, ne
 - 0.56 nord5: a rim is a hint, never the glass itself: faint in dark mode, gentle in light. The edge is shown by refraction with a thin colour fringe.
 - 0.57 nord5: tilt moves only the edge light of small, always-visible glass; no moving light under big lensed sheets.
 - 0.58 nord5: no sensor-driven decoration in Liquid glass.
+- 0.59 nord5: Liquid prism edge = colour gradient round the rim, accent or pale white, never strong in dark mode.
+- 0.60 nord5: Liquid prism edge = Physical prism technique as an add-on.
+
+
+- 0.61: Liquid Prism edge follows the Physical prism spectrum; the accent only tints the two outer colours.
+
+
+- 0.62: the hold-and-slide play menu now offers Normal and Lofi only.

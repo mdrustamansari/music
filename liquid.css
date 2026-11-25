@@ -4,6 +4,7 @@ html:not([data-geng=liquid]) .gliq{display:none}
 html[data-geng=liquid] .gphys{display:none}
 html[data-lq=off] .gliqs{display:none}
 html[data-lqm=frost] .gliqc,html:not([data-lqm=frost]) .gliqf{display:none}
+html:not([data-lqp=on]) .gliqp{display:none}
 html[data-geng=liquid]{--lqF:.2;--lqR:.7;--lqB:5.6px}
 
 /* body: mostly clear, a diagonal light across it, a hairline to stand apart on light backgrounds */
@@ -28,19 +29,34 @@ html[data-geng=liquid][data-theme=dark] :is(.tabs,#mini,#pop,#toast,.qsheet,.bms
     radial-gradient(circle 90px at var(--lqx,50%) var(--lqy,50%),rgba(255,255,255,calc(.3*var(--lqo,0))),transparent 70%),
     linear-gradient(150deg,rgba(44,50,64,calc(var(--lqA,.5) + .15)),rgba(30,35,48,calc(var(--lqA,.5) + .1)))}
 
-/* rim light: a ring that follows the corners, bright on two opposite corners and faint between them; the tilt turns it */
+/* rim light: a ring that follows the corners. Strength = Top edge slider (upper half) and Bottom edge slider (lower half),
+   times a theme factor so it is only a hint in dark mode. Plain: bright on two opposite corners, faint between them.
+   Prism: a colour gradient all round, tinted by the accent colour or by neutral pale white. */
+html[data-geng=liquid]{--lqD:1;--lqW:1.3px;--lqT:.7;--lqBt:.7;
+  --lqRim:conic-gradient(from -45deg,#fff 0,rgba(255,255,255,.12) 20%,rgba(255,255,255,.12) 30%,rgba(255,255,255,.85) 50%,rgba(255,255,255,.12) 70%,rgba(255,255,255,.12) 80%,#fff 100%)}
+html[data-geng=liquid][data-theme=dark]{--lqD:.38;--lqW:1px}
 :where(html[data-geng=liquid] :is(.list.g,.card.g,.tabs,#mini,#pop,#toast,.qsheet,.bms,#smsheet,.alone,.hcard.g,.tile.g,.rcard.g,.search.g,.smlive,.row.add.g,.gprev>.g)){position:relative}
 html[data-geng=liquid] :is(.list.g,.card.g,.tabs,#mini,#pop,#toast,.qsheet,.bms,#smsheet,.alone,.hcard.g,.tile.g,.rcard.g,.search.g,.smlive,.row.add.g,.gprev>.g)::before{
-  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;padding:1.5px;
-  background:conic-gradient(from -45deg,rgba(255,255,255,var(--lqR)) 0,rgba(255,255,255,calc(var(--lqR)*.12)) 20%,rgba(255,255,255,calc(var(--lqR)*.12)) 30%,rgba(255,255,255,calc(var(--lqR)*.85)) 50%,rgba(255,255,255,calc(var(--lqR)*.12)) 70%,rgba(255,255,255,calc(var(--lqR)*.12)) 80%,rgba(255,255,255,var(--lqR)) 100%);
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;}
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;padding:var(--lqW);
+  background:var(--lqRim);
+  -webkit-mask:linear-gradient(180deg,rgba(0,0,0,calc(var(--lqT)*var(--lqD))) 50%,rgba(0,0,0,calc(var(--lqBt)*var(--lqD))) 50%),linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:source-in,xor;
+  mask:linear-gradient(180deg,rgba(0,0,0,calc(var(--lqT)*var(--lqD))) 50%,rgba(0,0,0,calc(var(--lqBt)*var(--lqD))) 50%),linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  mask-composite:intersect,exclude}
 
-/* dark theme: the rim is only a hint (about a third of the light-mode strength, thinner, softer between the two bright corners) */
-html[data-geng=liquid][data-theme=dark] :is(.list.g,.card.g,.tabs,#mini,#pop,#toast,.qsheet,.bms,#smsheet,.alone,.hcard.g,.tile.g,.rcard.g,.search.g,.smlive,.row.add.g,.gprev>.g)::before{
-  padding:1px;background:conic-gradient(from -45deg,rgba(255,255,255,calc(var(--lqR)*.36)) 0,rgba(255,255,255,calc(var(--lqR)*.04)) 22%,rgba(255,255,255,calc(var(--lqR)*.04)) 28%,rgba(255,255,255,calc(var(--lqR)*.3)) 50%,rgba(255,255,255,calc(var(--lqR)*.04)) 72%,rgba(255,255,255,calc(var(--lqR)*.04)) 78%,rgba(255,255,255,calc(var(--lqR)*.36)) 100%)}
-/* light theme: the same ring, kept gentle, over a faint cool hairline so the shape still shows without the lens */
-html[data-geng=liquid]:not([data-theme=dark]) :is(.list.g,.card.g,.tabs,#mini,#pop,#toast,.qsheet,.bms,#smsheet,.alone,.hcard.g,.tile.g,.rcard.g,.search.g,.smlive,.row.add.g,.gprev>.g)::before{padding:1.2px}
+/* Prism edge: the Physical engine's prism edge, as an add-on. A colour gradient that glows along the top and bottom edges,
+   starts to thin where the corner begins and is gone about halfway round it, so the vertical sides stay clear.
+   Top edge and Bottom edge sliders set the two halves. Tint: accent colour or pale white. */
+html[data-geng=liquid][data-lqp=on][data-lqpt=accent]{--lqPr:linear-gradient(90deg,color-mix(in srgb,var(--acc1) 24%,#9fe0ff),#fff 32%,#ffc9a8 68%,color-mix(in srgb,var(--acc2) 24%,#d9b8ff));--lqGc:color-mix(in srgb,var(--acc1) 22%,#cde4ff)}
+html[data-geng=liquid][data-lqp=on][data-lqpt=white]{--lqPr:linear-gradient(90deg,#eef3ff,#fff 32%,#fff1e4 68%,#f3ecff);--lqGc:#eef3ff}
+html[data-geng=liquid][data-lqp=on] :is(.list.g,.card.g,.tabs,#mini,#pop,#toast,.qsheet,.bms,#smsheet,.alone,.hcard.g,.tile.g,.rcard.g,.search.g,.smlive,.row.add.g,.gprev>.g)::before{padding:1.6px;background:var(--lqPr);
+  -webkit-mask:linear-gradient(90deg,transparent calc(var(--er,28px)*.29),#000 var(--er,28px),#000 calc(100% - var(--er,28px)),transparent calc(100% - var(--er,28px)*.29)),linear-gradient(180deg,rgba(0,0,0,var(--lqT)) 50%,rgba(0,0,0,var(--lqBt)) 50%),linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:source-in,source-in,xor;
+  mask:linear-gradient(90deg,transparent calc(var(--er,28px)*.29),#000 var(--er,28px),#000 calc(100% - var(--er,28px)),transparent calc(100% - var(--er,28px)*.29)),linear-gradient(180deg,rgba(0,0,0,var(--lqT)) 50%,rgba(0,0,0,var(--lqBt)) 50%),linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:intersect,intersect,exclude}
+html[data-geng=liquid][data-lqp=on] :is(.list.g,.card.g,.tabs,#mini,#pop,#toast,.qsheet,.bms,#smsheet,.alone,.hcard.g,.tile.g,.rcard.g,.search.g,.smlive,.row.add.g,.gprev>.g)::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--lqGc) calc(var(--lqT)*24%),transparent) 0,transparent 14px),linear-gradient(0deg,color-mix(in srgb,var(--lqGc) calc(var(--lqBt)*24%),transparent) 0,transparent 14px);
+  -webkit-mask-image:linear-gradient(90deg,transparent calc(var(--er,28px)*.29),#000 var(--er,28px),#000 calc(100% - var(--er,28px)),transparent calc(100% - var(--er,28px)*.29));mask-image:linear-gradient(90deg,transparent calc(var(--er,28px)*.29),#000 var(--er,28px),#000 calc(100% - var(--er,28px)),transparent calc(100% - var(--er,28px)*.29))}
+
 /* settings rows of the glass section: title and text across the full width, buttons on their own row */
-.setrow:has(>.links[data-grp=geng]),.setrow:has(>.links[data-grp=lql]),.setrow:has(>.links[data-grp=lqm]){flex-direction:column;align-items:stretch;gap:8px}
-.setrow:has(>.links[data-grp=geng])>.links,.setrow:has(>.links[data-grp=lql])>.links,.setrow:has(>.links[data-grp=lqm])>.links{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:6px 24px}
+.setrow:has(>.links[data-grp=geng]),.setrow:has(>.links[data-grp=lql]),.setrow:has(>.links[data-grp=lqm]),.setrow:has(>.links[data-grp=lqpt]){flex-direction:column;align-items:stretch;gap:8px}
+.setrow:has(>.links[data-grp=geng])>.links,.setrow:has(>.links[data-grp=lql])>.links,.setrow:has(>.links[data-grp=lqm])>.links,.setrow:has(>.links[data-grp=lqpt])>.links{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:6px 24px}
 #lqst{margin-top:6px}

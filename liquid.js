@@ -143,7 +143,7 @@ function setBF(el, v) { if (v) { el.style.setProperty('-webkit-backdrop-filter',
     els.clear(); nvis = 0; maps.forEach(m => { cancelAnimationFrame(m.raf); m.f.remove(); }); maps.clear();
     [io, ro, mo, cmo].forEach(o => o && o.disconnect()); io = ro = mo = cmo = null;
     doc.removeEventListener('pointerdown', pd, true); root.removeEventListener('pointerup', pu); root.removeEventListener('pointercancel', pu); doc.removeEventListener('visibilitychange', vis);
-    ['--lqF', '--lqR', '--lqB', '--lqA'].forEach(p => H.style.removeProperty(p)); delete H.dataset.lq; delete H.dataset.lqm; markRims(false);
+    ['--lqF', '--lqT', '--lqBt', '--lqB', '--lqA'].forEach(p => H.style.removeProperty(p)); delete H.dataset.lq; delete H.dataset.lqm; delete H.dataset.lqp; delete H.dataset.lqpt; markRims(false);
   }
 
   function apply(S, col) {
@@ -151,7 +151,7 @@ function setBF(el, v) { if (v) { el.style.setProperty('-webkit-backdrop-filter',
     L.lv = lv; L.len = S.lqs === undefined ? 55 : S.lqs; L.firm = S.lqf === undefined ? 20 : S.lqf; L.rim = S.lqr === undefined ? 70 : S.lqr; L.mat = S.lqm === 'frost' ? 'frost' : 'clear'; L.frost = S.lqi === undefined ? 50 : S.lqi; L.tint = S.lqt === undefined ? 30 : S.lqt;
     H.dataset.geng = 'liquid'; H.dataset.lq = lv; H.dataset.lqm = L.mat;
     ['--gdim', '--gl', '--sheen', '--glf', '--oc', '--et', '--eb'].forEach(p => H.style.removeProperty(p));
-    H.style.setProperty('--lqF', (L.firm / 100).toFixed(2)); H.style.setProperty('--lqR', (L.rim / 100).toFixed(2)); H.style.setProperty('--lqB', blurPx() + 'px'); H.style.setProperty('--lqA', bodyA().toFixed(3));
+    H.style.setProperty('--lqF', (L.firm / 100).toFixed(2)); H.style.setProperty('--lqT', ((S.lqet === undefined ? 70 : S.lqet) / 100).toFixed(2)); H.style.setProperty('--lqBt', ((S.lqeb === undefined ? 70 : S.lqeb) / 100).toFixed(2)); H.dataset.lqp = S.lqp ? 'on' : 'off'; H.dataset.lqpt = S.lqpt === 'white' ? 'white' : 'accent'; H.style.setProperty('--lqB', blurPx() + 'px'); H.style.setProperty('--lqA', bodyA().toFixed(3));
     /* light sensor: estimate how bright the glass body is over the background and pick the text colour */
     if (H.dataset.theme === 'dark') { delete H.dataset.gtx; delete H.dataset.gtf; }
     else { const Lb = col && col.L !== undefined ? col.L : .97, a = Math.min(.95, bodyA() + .1), af = Math.min(.95, a + .16); H.dataset.gtx = (Lb * (1 - a) + a) < .5 ? 'light' : 'dark'; H.dataset.gtf = (Lb * (1 - af) + af) < .5 ? 'light' : 'dark'; }
