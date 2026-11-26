@@ -69,6 +69,14 @@ P.tick = (id, pos, playing) => {
   sess.pos = pos;
 };
 P.dur = ms => { if (sess && ms > 1000) sess.d = ms; };
+/* DJ mode plays sections: the same learning, with a lighter touch */
+P.dj = (id, how, played, len) => {
+  if (!D.on || !id) return; const now = Date.now(), r = rec(id); age(r, now); const sl = slotOf(now);
+  if (how === 'end') { r.L += .3; r.t[sl] += .3; save(); return; }
+  const b = Math.min(11, Math.floor(Math.max(0, played) / 10)), st = .6 * (12 - b) / 12; D.g.kb[b]++;
+  r.B += st; r.t[sl] -= st * .6; if (b < 6) { r.us = now; r.u = Math.max(r.u, now + 3 * st * st * 10 * DAY / 4); }
+  save();
+};
 /* a heart, a rating, a playlist add */
 P.like = (id, n) => { if (!D.on) return; const r = rec(id); age(r, Date.now()); r.L += n || 2; r.B *= .5; r.u = 0; r.t[slotOf(Date.now())] += 1; save(); };
 P.merge = moves => { moves.forEach(({ from, to }) => { const a = D.s[from]; if (!a) return; const b = D.s[to]; if (!b) D.s[to] = a; else { b.n += a.n; b.f += a.f; b.k += a.k; b.L += a.L; b.B = Math.max(b.B, a.B); b.u = Math.max(b.u, a.u); for (let i = 0; i < SLOTS; i++) b.t[i] += a.t[i]; } delete D.s[from]; }); save(true); };

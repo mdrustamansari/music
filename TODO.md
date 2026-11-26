@@ -60,3 +60,6 @@ Rule: a device-specific build carries the device in the internal version tag and
 
 
 - 0.62: DJ mode removed at the owner's request; its queued items (My sounds in DJ, DJ timers with the screen off) are dropped.
+
+
+- 0.63: confirm on the phone that DJ plays with the screen on and off; first build of the Android shell on the Mac (not compiled in my workspace).

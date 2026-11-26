@@ -164,3 +164,6 @@ ReplayGain, waveform scrubber, mood groups, swipe for volume, double-tap bookmar
 
 
 - 0.62: DJ mode removed; nothing in the app refers to it any more.
+
+
+- 0.63: DJ shows what it did and why it failed: status line, set list (New, Kept, Skipped), counts of new songs found.

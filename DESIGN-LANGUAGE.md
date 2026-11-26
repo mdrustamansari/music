@@ -379,3 +379,6 @@ Real recordings, levelled to one loudness, faded in and out, drifting slowly, ne
 
 
 - 0.62: the hold-and-slide play menu now offers Normal and Lofi only.
+
+
+- 0.63: DJ screen: Lean towards chips under the disc, Now and Next cards, Keep this part, This set list, sleep chips.

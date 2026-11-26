@@ -374,3 +374,9 @@ One app that is a calm player by day and a sleep sound system by night, with thr
 
 ## 0.62 nord5
 - DJ mode removed completely (button, screen, Settings rows, hold-menu pill, Found by DJ list and rule, dj.js). Lofi is unchanged; its Settings group and screen are now simply called Lofi.
+
+
+## 0.63 nord5
+- DJ mode rebuilt from scratch as an explorer. Two hidden audio players, equal-power crossfades, per-song loudness matching. Lean towards: Explore (new and forgotten songs first, the default), Mixed, Favourites (what you replay, A-B sections, heat). Variety slider, Learn from your skips toggle, Keep this part (saves an A-B section and a favourite), a set list with Save as playlist, sleep timer, Found by DJ list.
+- Fail-proof: sound check at every start (players and output measured separately), songs that cannot open are left out, stalled players are skipped, a silent audio chain is bypassed with direct output, and if nothing works DJ says why and returns to normal playback. The status line under Settings shows every step.
+- Android shell project delivered separately (rustams-music-android-0.63.zip) with a Mac install script.

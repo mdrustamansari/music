@@ -23,6 +23,8 @@ const RULES = {
   liked: { g: 0, n: 'Liked now', i: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M18.5 16v4M16.5 18h4"/>', t: 'choice',
     o: [['love', 'Songs you love'], ['cool', 'Songs you tend to skip'], ['rest', 'Resting after skips']],
     f: (p, C) => s => p === 'love' ? C.known(s.id) && C.w(s.id) > 1.15 : p === 'cool' ? C.known(s.id) && C.w(s.id) < .7 : C.rest(s.id), h: (L, C) => L.filter(s => C.known(s.id)).length },
+  dj: { g: 0, n: 'Found by DJ', i: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.2"/><path d="M12 3.5v3M20.5 12h-3"/>', t: 'choice',
+    o: [['yes', 'Heard in DJ, not played since']], f: (p, C) => s => C.dj(s.id), h: (L, C) => L.filter(s => C.dj(s.id)).length },
 
   artist: { g: 1, n: 'Artist', i: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-4 3.2-6 7-6s7 2 7 6"/>', t: 'pick', v: (s, C) => C.artist(s), f: (p, C) => { const q = new Set(p); return s => q.has(C.artist(s)); } },
   album: { g: 1, n: 'Album', i: '<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="12" cy="12" r="4"/>', t: 'pick', v: (s, C) => C.album(s), f: (p, C) => { const q = new Set(p); return s => q.has(C.album(s)); } },
